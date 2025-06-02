@@ -1,15 +1,23 @@
-*.iml
-.gradle
-/local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
-.DS_Store
-/build
-/captures
-.externalNativeBuild
-.cxx
-local.properties
+# Android / Gradle
+.gradle/                      # Carpetas internas de Gradle (no necesarias)
+local.properties              # Tus claves API locales, ¡seguro!
+.idea/                        # Configuración local de Android Studio
+*.iml                         # Archivos del proyecto generados por IntelliJ
+build/                        # Carpeta de build de cada módulo
+captures/                     # Carpeta de capturas de pantalla de Android Studio
+.externalNativeBuild/         # Para CMake / ndk-build
+.cxx/                         # Compilación nativa
+
+# OS generated files
+.DS_Store                     # Archivos basura en macOS
+
+# Keystore files
+*.jks                         # Archivos de firma (muy importante no subirlos)
+*.keystore
+
+# APK / AAB artifacts
+*.apk                         # Binaries generados
+*.aab
+
+# Logs
+*.log                         # Archivos de logs

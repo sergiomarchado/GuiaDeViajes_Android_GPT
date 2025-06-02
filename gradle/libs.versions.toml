@@ -1,6 +1,7 @@
 [versions]
 agp = "8.10.1"                               # Android Gradle Plugin
 hilt = "2.56.2"                              # Hilt DI
+hiltNavigationCompose = "1.2.0"
 ksp =  "2.0.21-1.0.27"                       # Kotlin Symbol Processing
 kotlin = "2.0.21"                            # Kotlin versión principal
 coreKtx = "1.16.0"                           # AndroidX Core KTX
@@ -12,7 +13,8 @@ activityCompose = "1.10.1"                   # Activity Compose
 composeBom = "2025.05.01"                    # Compose BOM
 retrofit = "3.0.0"                           # Retrofit para red
 androidx-navigation = "2.9.0"                # Navigation Compose
-kotlinxSerializationJson = "1.6.3"           # Kotlinx Serialization JSON
+kotlinxSerializationJson = "1.6.3"
+roomCompiler = "2.7.1"           # Kotlinx Serialization JSON
 
 [libraries]
 # AndroidX y Kotlin
@@ -36,6 +38,7 @@ androidx-navigation-compose = { module = "androidx.navigation:navigation-compose
 # Hilt (inyección de dependencias)
 hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
 hilt-compiler = { group = "com.google.dagger", name = "hilt-compiler", version.ref = "hilt" }
+androidx-hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
 
 # Retrofit
 retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }
@@ -47,6 +50,7 @@ kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serializa
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
+androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "roomCompiler" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }    # Plugin para apps Android

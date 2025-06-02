@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <application
+        android:name=".MyApp"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -12,6 +13,11 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.GuiaDeViajes_Android_GPT"
         tools:targetApi="31">
+        <activity
+            android:name=".home.presentation.HomeScreen.kt"
+            android:exported="false"
+            android:label="@string/title_activity_home_screen.kt"
+            android:theme="@style/Theme.GuiaDeViajes_Android_GPT" />
         <activity
             android:name=".MainActivity"
             android:exported="true"
