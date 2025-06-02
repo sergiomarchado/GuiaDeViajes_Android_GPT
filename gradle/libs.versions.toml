@@ -1,0 +1,57 @@
+[versions]
+agp = "8.10.1"                               # Android Gradle Plugin
+hilt = "2.56.2"                              # Hilt DI
+ksp =  "2.0.21-1.0.27"                       # Kotlin Symbol Processing
+kotlin = "2.0.21"                            # Kotlin versión principal
+coreKtx = "1.16.0"                           # AndroidX Core KTX
+junit = "4.13.2"                             # JUnit para tests locales
+junitVersion = "1.2.1"                       # AndroidX Test JUnit (instrumented)
+espressoCore = "3.6.1"                       # Espresso (UI testing)
+lifecycleRuntimeKtx = "2.9.0"                # Lifecycle KTX
+activityCompose = "1.10.1"                   # Activity Compose
+composeBom = "2025.05.01"                    # Compose BOM
+retrofit = "3.0.0"                           # Retrofit para red
+androidx-navigation = "2.9.0"                # Navigation Compose
+kotlinxSerializationJson = "1.6.3"           # Kotlinx Serialization JSON
+
+[libraries]
+# AndroidX y Kotlin
+androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycleRuntimeKtx" }
+androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
+
+# Compose BOM y componentes
+androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
+androidx-ui = { group = "androidx.compose.ui", name = "ui" }
+androidx-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
+androidx-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
+androidx-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
+androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
+androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
+androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
+
+# Navigation Compose
+androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "androidx-navigation" }
+
+# Hilt (inyección de dependencias)
+hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
+hilt-compiler = { group = "com.google.dagger", name = "hilt-compiler", version.ref = "hilt" }
+
+# Retrofit
+retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }
+
+# Kotlinx Serialization
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
+
+# Testing
+junit = { group = "junit", name = "junit", version.ref = "junit" }
+androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
+androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "agp" }    # Plugin para apps Android
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" } # Plugin Kotlin para Android
+kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" } # Plugin Compose para Kotlin
+hilt = { id = "com.google.dagger.hilt.android", version.ref ="hilt" }             # Plugin Hilt
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }                     # Plugin KSP
+
