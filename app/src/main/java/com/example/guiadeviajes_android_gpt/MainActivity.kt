@@ -5,18 +5,18 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.guiadeviajes_android_gpt.auth.presentation.LoginScreen
+import com.example.guiadeviajes_android_gpt.auth.presentation.RegisterScreen
+import com.example.guiadeviajes_android_gpt.auth.viewmodel.AuthViewModel
 import com.example.guiadeviajes_android_gpt.home.presentation.HomeScreen
+import com.example.guiadeviajes_android_gpt.profile.presentation.ProfileScreen
 import com.example.guiadeviajes_android_gpt.ui.theme.GuiaDeViajes_Android_GPTTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -27,33 +27,35 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             GuiaDeViajes_Android_GPTTheme {
-                Surface (
+                Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
-                ){
+                ) {
                     val navController = rememberNavController()
-                    NavHost(navController = navController, startDestination = "home"){
-                        composable("home"){
-                            HomeScreen()
+                    val authViewModel: AuthViewModel = hiltViewModel()
+
+                    // Decide la pantalla inicial: home si hay usuario logueado, login si no.
+                    val startDestination = if (authViewModel.isUserLoggedIn()) "home" else "login"
+
+                    NavHost(
+                        navController = navController,
+                        startDestination = startDestination
+                    ) {
+                        composable("login") {
+                            LoginScreen(navController = navController)
+                        }
+                        composable("register") {
+                            RegisterScreen(navController = navController)
+                        }
+                        composable("home") {
+                            HomeScreen(navController = navController)
+                        }
+                        composable("profile") {
+                            ProfileScreen(navController = navController)
                         }
                     }
                 }
             }
         }
-    }
-}
-
-@Composable
-fun Greeting(name: String) {
-    Text(
-        text = "Hello $name!"
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    GuiaDeViajes_Android_GPTTheme {
-        Greeting("Android")
     }
 }

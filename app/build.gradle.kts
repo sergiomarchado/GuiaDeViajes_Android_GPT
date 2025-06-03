@@ -7,6 +7,7 @@ plugins {
     alias(libs.plugins.hilt)
     alias(libs.plugins.ksp)
     id("kotlin-parcelize")
+    alias(libs.plugins.google.gms.google.services)
 }
 
 configurations.all {
@@ -83,6 +84,8 @@ dependencies {
     implementation(libs.retrofit)
     implementation(libs.retrofit.moshi.converter)
     implementation(libs.moshi)
+    implementation(libs.firebase.auth)
+    implementation(libs.firebase.database)
     ksp(libs.moshi.kotlin.codegen)
 
     // OkHttp Logging Interceptor
@@ -97,10 +100,6 @@ dependencies {
     ksp(libs.hilt.compiler)
     implementation(libs.androidx.hilt.navigation.compose)
 
-    // Compose RichText (UI + Markdown) - este ya lo puedes quitar si quieres usar HTML
-    // implementation(libs.richtext.ui.v100alpha02)
-    // implementation(libs.richtext.commonmark.android)
-
     // CommonMark para convertir Markdown a HTML
     implementation(libs.commonmark)
 
@@ -112,4 +111,8 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.analytics)
+
 }
