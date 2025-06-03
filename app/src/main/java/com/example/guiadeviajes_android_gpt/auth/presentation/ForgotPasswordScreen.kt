@@ -5,24 +5,23 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.guiadeviajes_android_gpt.auth.viewmodel.AuthViewModel
+import kotlinx.coroutines.launch
 
 @Composable
-fun LoginScreen(
+fun ForgotPasswordScreen(
     navController: NavController,
     viewModel: AuthViewModel = hiltViewModel()
 ) {
     val emailState = remember { mutableStateOf("") }
-    val passwordState = remember { mutableStateOf("") }
     val isLoading by viewModel.isLoading.collectAsState()
     val errorMessage by viewModel.errorMessage.collectAsState()
 
-    // 🔹 Snackbar para mostrar errores
     val snackbarHostState = remember { SnackbarHostState() }
+    val coroutineScope = rememberCoroutineScope()
 
     LaunchedEffect(errorMessage) {
         errorMessage?.let { message ->
@@ -47,7 +46,7 @@ fun LoginScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "Iniciar sesión",
+                    text = "Recuperar contraseña",
                     style = MaterialTheme.typography.headlineSmall,
                     modifier = Modifier.padding(bottom = 16.dp)
                 )
@@ -60,52 +59,43 @@ fun LoginScreen(
                     modifier = Modifier.fillMaxWidth()
                 )
 
-                Spacer(modifier = Modifier.height(8.dp))
-
-                OutlinedTextField(
-                    value = passwordState.value,
-                    onValueChange = { passwordState.value = it },
-                    label = { Text("Contraseña") },
-                    singleLine = true,
-                    visualTransformation = PasswordVisualTransformation(),
-                    modifier = Modifier.fillMaxWidth()
-                )
-
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Button(
                     onClick = {
-                        viewModel.loginUser(
-                            emailState.value.trim(),
-                            passwordState.value.trim(),
-                            onSuccess = {
-                                // Navega a HomeScreen y limpia la pila
-                                navController.navigate("home") {
-                                    popUpTo("login") { inclusive = true }
+                        if (emailState.value.trim().isNotEmpty()) {
+                            viewModel.sendPasswordResetEmail(
+                                email = emailState.value.trim(),
+                                onSuccess = {
+                                    coroutineScope.launch {
+                                        snackbarHostState.showSnackbar("Correo de recuperación enviado. Revisa tu bandeja de entrada.")
+                                        navController.popBackStack() // Volver atrás tras éxito
+                                    }
+                                },
+                                onError = { error ->
+                                    coroutineScope.launch {
+                                        snackbarHostState.showSnackbar(error)
+                                    }
                                 }
+                            )
+                        } else {
+                            coroutineScope.launch {
+                                snackbarHostState.showSnackbar("Por favor, introduce un email.")
                             }
-                        )
+                        }
                     },
                     modifier = Modifier.fillMaxWidth(),
                     enabled = !isLoading
                 ) {
-                    Text("Iniciar sesión")
+                    Text("Enviar correo de recuperación")
                 }
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // 🔹 Botón para ir a la pantalla de registro
                 TextButton(
-                    onClick = { navController.navigate("register") }
+                    onClick = { navController.popBackStack() }
                 ) {
-                    Text("¿No tienes cuenta? Regístrate aquí")
-                }
-
-                // 🔹 Botón para ir a la pantalla de recuperación de contraseña
-                TextButton(
-                    onClick = { navController.navigate("forgot_password") }
-                ) {
-                    Text("¿Olvidaste tu contraseña?")
+                    Text("Volver atrás")
                 }
 
                 if (isLoading) {

@@ -12,6 +12,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.guiadeviajes_android_gpt.auth.presentation.EmailVerificationScreen
+import com.example.guiadeviajes_android_gpt.auth.presentation.ForgotPasswordScreen
 import com.example.guiadeviajes_android_gpt.auth.presentation.LoginScreen
 import com.example.guiadeviajes_android_gpt.auth.presentation.RegisterScreen
 import com.example.guiadeviajes_android_gpt.auth.viewmodel.AuthViewModel
@@ -34,7 +36,7 @@ class MainActivity : ComponentActivity() {
                     val navController = rememberNavController()
                     val authViewModel: AuthViewModel = hiltViewModel()
 
-                    // Decide la pantalla inicial: home si hay usuario logueado, login si no.
+                    // 🔹 Decide la pantalla inicial: home si hay usuario logueado, login si no.
                     val startDestination = if (authViewModel.isUserLoggedIn()) "home" else "login"
 
                     NavHost(
@@ -46,6 +48,12 @@ class MainActivity : ComponentActivity() {
                         }
                         composable("register") {
                             RegisterScreen(navController = navController)
+                        }
+                        composable("email_verification") {
+                            EmailVerificationScreen(navController = navController)
+                        }
+                        composable("forgot_password") {
+                            ForgotPasswordScreen(navController = navController)
                         }
                         composable("home") {
                             HomeScreen(navController = navController)

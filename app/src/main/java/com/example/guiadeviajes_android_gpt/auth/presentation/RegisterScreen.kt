@@ -12,26 +12,27 @@ import androidx.navigation.NavController
 import com.example.guiadeviajes_android_gpt.auth.viewmodel.AuthViewModel
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegisterScreen(
     navController: NavController,
     viewModel: AuthViewModel = hiltViewModel()
 ) {
-    // Estados de los campos
+    // 🔹 Estados de los campos
     val firstNameState = remember { mutableStateOf("") }
     val lastNameState = remember { mutableStateOf("") }
     val emailState = remember { mutableStateOf("") }
     val passwordState = remember { mutableStateOf("") }
     val confirmPasswordState = remember { mutableStateOf("") }
 
-    // Estado de carga y error
+    // 🔹 Estado de carga y error
     val isLoading by viewModel.isLoading.collectAsState()
     val errorMessage by viewModel.errorMessage.collectAsState()
 
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
 
-    // Mostrar errores de Firebase
+    // 🔹 Muestra errores globales
     LaunchedEffect(errorMessage) {
         errorMessage?.let { message ->
             snackbarHostState.showSnackbar(message)
@@ -60,6 +61,7 @@ fun RegisterScreen(
                     modifier = Modifier.padding(bottom = 16.dp)
                 )
 
+                // 🔹 Nombre
                 OutlinedTextField(
                     value = firstNameState.value,
                     onValueChange = { firstNameState.value = it },
@@ -70,6 +72,7 @@ fun RegisterScreen(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
+                // 🔹 Apellidos
                 OutlinedTextField(
                     value = lastNameState.value,
                     onValueChange = { lastNameState.value = it },
@@ -80,6 +83,7 @@ fun RegisterScreen(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
+                // 🔹 Email
                 OutlinedTextField(
                     value = emailState.value,
                     onValueChange = { emailState.value = it },
@@ -90,6 +94,7 @@ fun RegisterScreen(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
+                // 🔹 Contraseña
                 OutlinedTextField(
                     value = passwordState.value,
                     onValueChange = { passwordState.value = it },
@@ -101,6 +106,7 @@ fun RegisterScreen(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
+                // 🔹 Confirmar contraseña
                 OutlinedTextField(
                     value = confirmPasswordState.value,
                     onValueChange = { confirmPasswordState.value = it },
@@ -112,6 +118,7 @@ fun RegisterScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
+                // 🔹 Botón de registro
                 Button(
                     onClick = {
                         if (passwordState.value == confirmPasswordState.value) {
@@ -120,9 +127,15 @@ fun RegisterScreen(
                                 password = passwordState.value.trim(),
                                 firstName = firstNameState.value.trim(),
                                 lastName = lastNameState.value.trim(),
-                                onSuccess = {
-                                    navController.navigate("home") {
+                                onVerificationEmailSent = {
+                                    // Navega a la pantalla de verificación de email
+                                    navController.navigate("email_verification") {
                                         popUpTo("register") { inclusive = true }
+                                    }
+                                },
+                                onError = { errorMsg ->
+                                    coroutineScope.launch {
+                                        snackbarHostState.showSnackbar(errorMsg)
                                     }
                                 }
                             )
@@ -140,12 +153,14 @@ fun RegisterScreen(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
+                // 🔹 Botón para volver a Login
                 TextButton(
                     onClick = { navController.navigate("login") }
                 ) {
                     Text("¿Ya tienes cuenta? Inicia sesión")
                 }
 
+                // 🔹 Cargando...
                 if (isLoading) {
                     Spacer(modifier = Modifier.height(16.dp))
                     CircularProgressIndicator()

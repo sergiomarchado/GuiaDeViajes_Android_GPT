@@ -5,25 +5,24 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.guiadeviajes_android_gpt.auth.viewmodel.AuthViewModel
+import kotlinx.coroutines.launch
 
 @Composable
-fun LoginScreen(
+fun EmailVerificationScreen(
     navController: NavController,
     viewModel: AuthViewModel = hiltViewModel()
 ) {
-    val emailState = remember { mutableStateOf("") }
-    val passwordState = remember { mutableStateOf("") }
     val isLoading by viewModel.isLoading.collectAsState()
     val errorMessage by viewModel.errorMessage.collectAsState()
-
-    // 🔹 Snackbar para mostrar errores
     val snackbarHostState = remember { SnackbarHostState() }
+    val coroutineScope = rememberCoroutineScope()
 
+    // Mostrar errores en snackbar
     LaunchedEffect(errorMessage) {
         errorMessage?.let { message ->
             snackbarHostState.showSnackbar(message)
@@ -47,65 +46,59 @@ fun LoginScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "Iniciar sesión",
+                    text = "Verificación de correo",
                     style = MaterialTheme.typography.headlineSmall,
                     modifier = Modifier.padding(bottom = 16.dp)
                 )
 
-                OutlinedTextField(
-                    value = emailState.value,
-                    onValueChange = { emailState.value = it },
-                    label = { Text("Email") },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                OutlinedTextField(
-                    value = passwordState.value,
-                    onValueChange = { passwordState.value = it },
-                    label = { Text("Contraseña") },
-                    singleLine = true,
-                    visualTransformation = PasswordVisualTransformation(),
-                    modifier = Modifier.fillMaxWidth()
+                Text(
+                    text = "Hemos enviado un correo de verificación. Por favor, revisa tu bandeja de entrada y haz clic en el enlace de verificación.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    textAlign = TextAlign.Center
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Button(
                     onClick = {
-                        viewModel.loginUser(
-                            emailState.value.trim(),
-                            passwordState.value.trim(),
-                            onSuccess = {
-                                // Navega a HomeScreen y limpia la pila
-                                navController.navigate("home") {
-                                    popUpTo("login") { inclusive = true }
+                        coroutineScope.launch {
+                            viewModel.reloadAndCheckEmailVerification { isVerified ->
+                                if (isVerified) {
+                                    // Si el email está verificado, navega a home
+                                    navController.navigate("home") {
+                                        popUpTo("email_verification") { inclusive = true }
+                                    }
+                                } else {
+                                    viewModel.showError("El correo aún no está verificado. Revisa tu bandeja de entrada.")
                                 }
                             }
-                        )
+                        }
                     },
-                    modifier = Modifier.fillMaxWidth(),
                     enabled = !isLoading
                 ) {
-                    Text("Iniciar sesión")
+                    Text("He verificado mi correo")
                 }
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // 🔹 Botón para ir a la pantalla de registro
-                TextButton(
-                    onClick = { navController.navigate("register") }
+                Button(
+                    onClick = {
+                        viewModel.resendVerificationEmail(
+                            onSuccess = {
+                                coroutineScope.launch {
+                                    snackbarHostState.showSnackbar("Correo de verificación reenviado.")
+                                }
+                            },
+                            onError = { error ->
+                                coroutineScope.launch {
+                                    snackbarHostState.showSnackbar(error)
+                                }
+                            }
+                        )
+                    },
+                    enabled = !isLoading
                 ) {
-                    Text("¿No tienes cuenta? Regístrate aquí")
-                }
-
-                // 🔹 Botón para ir a la pantalla de recuperación de contraseña
-                TextButton(
-                    onClick = { navController.navigate("forgot_password") }
-                ) {
-                    Text("¿Olvidaste tu contraseña?")
+                    Text("Reenviar correo")
                 }
 
                 if (isLoading) {
