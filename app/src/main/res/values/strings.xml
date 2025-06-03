@@ -1,4 +1,4 @@
 <resources>
     <string name="app_name">GuiaDeViajes_Android_GPT</string>
-    <string name="title_activity_home_screen.kt">HomeScreen.kt</string>
+    <string name="title_activity_home_screen">Home Screen</string>
 </resources>

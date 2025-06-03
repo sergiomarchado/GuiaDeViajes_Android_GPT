@@ -1,11 +1,21 @@
 import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.hilt)
     alias(libs.plugins.ksp)
-    id ("kotlin-parcelize")
+    id("kotlin-parcelize")
+}
+
+configurations.all {
+    resolutionStrategy.eachDependency {
+        if (requested.group == "org.jetbrains" && requested.name == "annotations") {
+            useVersion("23.0.0")
+        }
+    }
+    exclude(group = "com.intellij", module = "annotations")
 }
 
 android {
@@ -20,7 +30,7 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        // Leer local.properties
+
         val localProperties = Properties().apply {
             load(rootProject.file("local.properties").inputStream())
         }
@@ -37,13 +47,16 @@ android {
             )
         }
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+
     kotlinOptions {
         jvmTarget = "11"
     }
+
     buildFeatures {
         buildConfig = true
         compose = true
@@ -52,22 +65,28 @@ android {
 }
 
 dependencies {
+    // AndroidX y Compose
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
-
-    // Compose BOM
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(libs.androidx.material.icons.extended)
 
     // Navigation Compose
     implementation(libs.androidx.navigation.compose)
 
-    // Retrofit
+    // Retrofit y Moshi
     implementation(libs.retrofit)
+    implementation(libs.retrofit.moshi.converter)
+    implementation(libs.moshi)
+    ksp(libs.moshi.kotlin.codegen)
+
+    // OkHttp Logging Interceptor
+    implementation(libs.okhttp.logging.interceptor)
 
     // Kotlin Serialization JSON
     implementation(libs.kotlinx.serialization.json)
@@ -77,6 +96,13 @@ dependencies {
     implementation(libs.androidx.room.compiler)
     ksp(libs.hilt.compiler)
     implementation(libs.androidx.hilt.navigation.compose)
+
+    // Compose RichText (UI + Markdown) - este ya lo puedes quitar si quieres usar HTML
+    // implementation(libs.richtext.ui.v100alpha02)
+    // implementation(libs.richtext.commonmark.android)
+
+    // CommonMark para convertir Markdown a HTML
+    implementation(libs.commonmark)
 
     // Testing
     testImplementation(libs.junit)
