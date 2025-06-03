@@ -36,6 +36,7 @@ fun HomeScreen(
     var landmarksChecked by remember { mutableStateOf(false) }
     var parksChecked by remember { mutableStateOf(false) }
     var beachesChecked by remember { mutableStateOf(false) }
+    var hotelsChecked by remember { mutableStateOf(false) }
 
     val travelInfo by viewModel.travelInfo.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
@@ -122,7 +123,9 @@ fun HomeScreen(
                 parksChecked = parksChecked,
                 onParksCheckedChange = { parksChecked = it },
                 beachesChecked = beachesChecked,
-                onBeachesCheckedChange = { beachesChecked = it }
+                onBeachesCheckedChange = { beachesChecked = it },
+                hotelsChecked = hotelsChecked,
+                onHotelsCheckedChange = { hotelsChecked = it }
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -137,6 +140,7 @@ fun HomeScreen(
                         if (landmarksChecked) interests.add("sitios emblemáticos")
                         if (parksChecked) interests.add("parques naturales")
                         if (beachesChecked) interests.add("playas")
+                        if (hotelsChecked) interests.add("hoteles o campings")
 
                         val finalPrompt = buildString {
                             append("Estoy viajando a ${cityQuery.text}, $selectedCountry con mi perro.")
@@ -190,6 +194,8 @@ fun HomeScreen(
                                 text = Html.fromHtml(htmlContent, Html.FROM_HTML_MODE_LEGACY)
                                 setTextColor(android.graphics.Color.BLACK)
                                 textSize = 16f
+                                // Hacer los links clicables
+                                movementMethod = android.text.method.LinkMovementMethod.getInstance()
                             }
                         },
                         modifier = Modifier.padding(16.dp)
@@ -211,7 +217,9 @@ fun InterestsSection(
     parksChecked: Boolean,
     onParksCheckedChange: (Boolean) -> Unit,
     beachesChecked: Boolean,
-    onBeachesCheckedChange: (Boolean) -> Unit
+    onBeachesCheckedChange: (Boolean) -> Unit,
+    hotelsChecked: Boolean,
+    onHotelsCheckedChange: (Boolean) -> Unit
 ) {
     Column {
         InterestCheckbox("Museos", museumsChecked, onMuseumsCheckedChange, Icons.Default.Museum)
@@ -219,6 +227,7 @@ fun InterestsSection(
         InterestCheckbox("Sitios emblemáticos", landmarksChecked, onLandmarksCheckedChange, Icons.Default.LocationOn)
         InterestCheckbox("Parques naturales", parksChecked, onParksCheckedChange, Icons.Default.Forest)
         InterestCheckbox("Playas", beachesChecked, onBeachesCheckedChange, Icons.Default.BeachAccess)
+        InterestCheckbox("Hoteles o Campings", hotelsChecked, onHotelsCheckedChange, Icons.Default.LocationOn)
     }
 }
 
