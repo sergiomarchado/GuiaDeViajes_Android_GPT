@@ -16,6 +16,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
@@ -170,7 +171,6 @@ fun HomeScreen(
             if (isLoading) {
                 CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
             } else if (travelInfo.isNotBlank()) {
-                val context = LocalContext.current
                 val htmlContent by remember(travelInfo) {
                     derivedStateOf {
                         val parser = Parser.builder().build()
@@ -179,6 +179,9 @@ fun HomeScreen(
                         renderer.render(document)
                     }
                 }
+
+                // Convierte el color Compose a Int para TextView
+                val textColorInt = MaterialTheme.colorScheme.onSurface.toArgb()
 
                 Card(
                     shape = MaterialTheme.shapes.medium,
@@ -189,13 +192,11 @@ fun HomeScreen(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     AndroidView(
-                        factory = {
-                            TextView(it).apply {
+                        factory = { context ->
+                            TextView(context).apply {
                                 text = Html.fromHtml(htmlContent, Html.FROM_HTML_MODE_LEGACY)
-                                setTextColor(android.graphics.Color.BLACK)
+                                setTextColor(textColorInt)
                                 textSize = 16f
-                                // Hacer los links clicables
-                                movementMethod = android.text.method.LinkMovementMethod.getInstance()
                             }
                         },
                         modifier = Modifier.padding(16.dp)
