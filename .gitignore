@@ -9,7 +9,10 @@ captures/                     # Carpeta de capturas de pantalla de Android Studi
 .cxx/                         # Compilación nativa
 
 # OS generated files
-.DS_Store                     # Archivos basura en macOS
+.DS_Store                     # Archivos basura en macOS y Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
 
 # Keystore files
 *.jks                         # Archivos de firma (muy importante no subirlos)
