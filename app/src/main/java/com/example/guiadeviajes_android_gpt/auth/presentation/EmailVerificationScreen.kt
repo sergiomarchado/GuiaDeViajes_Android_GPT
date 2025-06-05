@@ -5,8 +5,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.guiadeviajes_android_gpt.auth.viewmodel.AuthViewModel
@@ -31,7 +33,8 @@ fun EmailVerificationScreen(
     }
 
     Scaffold(
-        snackbarHost = { SnackbarHost(snackbarHostState) }
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+        containerColor = Color(0xFF011A30)
     ) { padding ->
         Box(
             modifier = Modifier
@@ -47,13 +50,15 @@ fun EmailVerificationScreen(
             ) {
                 Text(
                     text = "Verificación de correo",
-                    style = MaterialTheme.typography.headlineSmall,
+                    color = Color.White,
+                    fontSize = 24.sp,
                     modifier = Modifier.padding(bottom = 16.dp)
                 )
 
                 Text(
                     text = "Hemos enviado un correo de verificación. Por favor, revisa tu bandeja de entrada y haz clic en el enlace de verificación.",
-                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color.White.copy(alpha = 0.8f),
+                    fontSize = 16.sp,
                     textAlign = TextAlign.Center
                 )
 
@@ -64,7 +69,6 @@ fun EmailVerificationScreen(
                         coroutineScope.launch {
                             viewModel.reloadAndCheckEmailVerification { isVerified ->
                                 if (isVerified) {
-                                    // Si el email está verificado, navega a home
                                     navController.navigate("home") {
                                         popUpTo("email_verification") { inclusive = true }
                                     }
@@ -74,7 +78,12 @@ fun EmailVerificationScreen(
                             }
                         }
                     },
-                    enabled = !isLoading
+                    enabled = !isLoading,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.White,
+                        contentColor = Color(0xFF011A30)
+                    ),
+                    modifier = Modifier.fillMaxWidth()
                 ) {
                     Text("He verificado mi correo")
                 }
@@ -96,14 +105,19 @@ fun EmailVerificationScreen(
                             }
                         )
                     },
-                    enabled = !isLoading
+                    enabled = !isLoading,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.White,
+                        contentColor = Color(0xFF011A30)
+                    ),
+                    modifier = Modifier.fillMaxWidth()
                 ) {
                     Text("Reenviar correo")
                 }
 
                 if (isLoading) {
                     Spacer(modifier = Modifier.height(16.dp))
-                    CircularProgressIndicator()
+                    CircularProgressIndicator(color = Color.White)
                 }
             }
         }

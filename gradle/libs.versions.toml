@@ -2,7 +2,6 @@
 agp = "8.10.1"
 commonmark = "0.21.0"
 firebaseBom = "33.14.0"
-haliliboRichtextUi = "1.0.0-alpha02"
 hilt = "2.56.2"
 hiltNavigationCompose = "1.2.0"
 ksp = "2.0.21-1.0.27"
@@ -22,11 +21,11 @@ retrofitMoshiConverter = "2.11.0"
 okhttpLoggingInterceptor = "4.12.0"
 androidx-navigation = "2.9.0"
 kotlinxSerializationJson = "1.6.3"
-richtextCommonmarkAndroid = "1.0.0-alpha02"
 roomCompiler = "2.7.1"
 googleGmsGoogleServices = "4.4.2"
 firebaseAuth = "23.2.1"
 firebaseDatabase = "21.0.0"
+compose-ui-text = "1.8.2"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -58,10 +57,11 @@ junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
 androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "roomCompiler" }
-richtext-commonmark-android = { module = "com.halilibo.compose-richtext:richtext-commonmark-android", version.ref = "richtextCommonmarkAndroid" }
-richtext-ui-v100alpha02 = { module = "com.halilibo.compose-richtext:richtext-ui", version.ref = "haliliboRichtextUi" }
 firebase-auth = { group = "com.google.firebase", name = "firebase-auth", version.ref = "firebaseAuth" }
 firebase-database = { group = "com.google.firebase", name = "firebase-database", version.ref = "firebaseDatabase" }
+androidx-compose-animation = { group = "androidx.compose.animation", name = "animation" }
+androidx-compose-ui-text = { module = "androidx.compose.ui:ui-text", version.ref = "compose-ui-text" }
+
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

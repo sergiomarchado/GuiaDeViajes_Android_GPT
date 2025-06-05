@@ -57,6 +57,9 @@ android {
     kotlinOptions {
         jvmTarget = "11"
     }
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.5.15"
+    }
 
     buildFeatures {
         buildConfig = true
@@ -114,5 +117,9 @@ dependencies {
 
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.analytics)
+    implementation(libs.androidx.compose.animation)
+    implementation(libs.androidx.compose.ui.text)
+
+
 
 }

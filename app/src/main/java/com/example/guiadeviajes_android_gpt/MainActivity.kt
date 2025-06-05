@@ -12,12 +12,11 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.guiadeviajes_android_gpt.auth.presentation.EmailVerificationScreen
-import com.example.guiadeviajes_android_gpt.auth.presentation.ForgotPasswordScreen
-import com.example.guiadeviajes_android_gpt.auth.presentation.LoginScreen
-import com.example.guiadeviajes_android_gpt.auth.presentation.RegisterScreen
+import com.example.guiadeviajes_android_gpt.auth.presentation.*
 import com.example.guiadeviajes_android_gpt.auth.viewmodel.AuthViewModel
 import com.example.guiadeviajes_android_gpt.home.presentation.HomeScreen
+import com.example.guiadeviajes_android_gpt.home.presentation.HomeViewModel
+import com.example.guiadeviajes_android_gpt.home.presentation.ResultScreen
 import com.example.guiadeviajes_android_gpt.profile.presentation.ProfileScreen
 import com.example.guiadeviajes_android_gpt.ui.theme.GuiaDeViajes_Android_GPTTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -34,15 +33,18 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     val navController = rememberNavController()
-                    val authViewModel: AuthViewModel = hiltViewModel()
 
-                    // 🔹 Decide la pantalla inicial: home si hay usuario logueado, login si no.
-                    val startDestination = if (authViewModel.isUserLoggedIn()) "home" else "login"
+                    // ✅ ViewModels compartidos
+                    val authViewModel: AuthViewModel = hiltViewModel()
+                    val homeViewModel: HomeViewModel = hiltViewModel()
 
                     NavHost(
                         navController = navController,
-                        startDestination = startDestination
+                        startDestination = "splash"
                     ) {
+                        composable("splash") {
+                            SplashScreen(navController = navController)
+                        }
                         composable("login") {
                             LoginScreen(navController = navController)
                         }
@@ -56,10 +58,19 @@ class MainActivity : ComponentActivity() {
                             ForgotPasswordScreen(navController = navController)
                         }
                         composable("home") {
-                            HomeScreen(navController = navController)
+                            HomeScreen(
+                                navController = navController,
+                                viewModel = homeViewModel // 🚀 Pasamos el ViewModel compartido
+                            )
                         }
                         composable("profile") {
                             ProfileScreen(navController = navController)
+                        }
+                        composable("result_screen") {
+                            ResultScreen(
+                                navController = navController,
+                                viewModel = homeViewModel // 🚀 Pasamos el ViewModel compartido
+                            )
                         }
                     }
                 }

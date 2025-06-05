@@ -1,5 +1,6 @@
 package com.example.guiadeviajes_android_gpt.home.presentation
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.guiadeviajes_android_gpt.home.data.remote.dto.ChatiRequestDto
@@ -16,7 +17,7 @@ import javax.inject.Inject
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val repository: TravelGuideRepository,
-    private val firebaseAuth: FirebaseAuth // ✅ Inyectamos FirebaseAuth aquí
+    private val firebaseAuth: FirebaseAuth
 ) : ViewModel() {
 
     private val _travelInfo = MutableStateFlow("")
@@ -47,6 +48,7 @@ class HomeViewModel @Inject constructor(
                 )
                 val response: ChatiResponseDto = repository.getTravelInformation(request)
                 val content = response.choices.firstOrNull()?.message?.content ?: "Sin respuesta"
+                Log.d("API_RESPONSE", content)
                 _travelInfo.value = content
             } catch (e: Exception) {
                 _errorMessage.value = e.message ?: "Error desconocido"
@@ -60,7 +62,10 @@ class HomeViewModel @Inject constructor(
         _errorMessage.value = null
     }
 
-    // Función para cerrar sesión
+    fun clearTravelInfo() {
+        _travelInfo.value = ""
+    }
+
     fun logout() {
         firebaseAuth.signOut()
     }
