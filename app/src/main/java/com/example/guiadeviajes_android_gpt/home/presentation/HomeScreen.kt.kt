@@ -1,24 +1,24 @@
 package com.example.guiadeviajes_android_gpt.home.presentation
 
+import android.net.Uri
+import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Logout
-import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.example.guiadeviajes_android_gpt.home.presentation.components.CityCountryInputs
+import com.example.guiadeviajes_android_gpt.home.presentation.components.DrawerContent
 import com.example.guiadeviajes_android_gpt.home.presentation.components.HomeTopAppBar
 import com.example.guiadeviajes_android_gpt.home.presentation.components.InterestsSection
+import com.example.guiadeviajes_android_gpt.home.presentation.components.SearchButton
 import kotlinx.coroutines.launch
 
 @Composable
@@ -29,91 +29,46 @@ fun HomeScreen(
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
-    val userName = "Sergio"
+    // Datos de usuario simulados
+    val userName   = "Sergio"
     val userTokens = 120
 
-    var selectedCountry by remember { mutableStateOf("España") }
-    var cityQuery by remember { mutableStateOf(TextFieldValue("")) }
-    var museumsChecked by remember { mutableStateOf(false) }
+    // Estado “crudo” para país y ciudad
+    val selectedCountryState = remember { mutableStateOf("España") }
+    val cityQueryState       = remember { mutableStateOf(TextFieldValue("")) }
+
+    // Estados para cada checkbox de interés
+    var museumsChecked     by remember { mutableStateOf(false) }
     var restaurantsChecked by remember { mutableStateOf(false) }
-    var landmarksChecked by remember { mutableStateOf(false) }
-    var parksChecked by remember { mutableStateOf(false) }
-    var beachesChecked by remember { mutableStateOf(false) }
-    var hotelsChecked by remember { mutableStateOf(false) }
-    var vetsChecked by remember { mutableStateOf(false) }
-    var dogResortsChecked by remember { mutableStateOf(false) }
-    var groomersChecked by remember { mutableStateOf(false) }
-
-    val isLoading by viewModel.isLoading.collectAsState()
-    val errorMessage by viewModel.errorMessage.collectAsState()
-    val snackbarHostState = remember { SnackbarHostState() }
-
-    // Mostrar Snackbar si hay error
-    LaunchedEffect(errorMessage) {
-        errorMessage?.let { message ->
-            snackbarHostState.showSnackbar(message)
-            viewModel.clearErrorMessage()
-        }
-    }
+    var landmarksChecked   by remember { mutableStateOf(false) }
+    var parksChecked       by remember { mutableStateOf(false) }
+    var beachesChecked     by remember { mutableStateOf(false) }
+    var hotelsChecked      by remember { mutableStateOf(false) }
+    var pipicanChecked     by remember { mutableStateOf(false) }
+    var walkingZonesChecked by remember { mutableStateOf(false) }
+    var vetsChecked        by remember { mutableStateOf(false) }
+    var dogResortsChecked  by remember { mutableStateOf(false) }
+    var groomersChecked    by remember { mutableStateOf(false) }
 
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
-            ModalDrawerSheet(
-                drawerContainerColor = Color(0xFF011A30),
-                drawerContentColor = Color.White
-            ) {
-                Text(
-                    "Menú",
-                    modifier = Modifier.padding(16.dp),
-                    color = Color.White,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold
-                )
-                NavigationDrawerItem(
-                    label = { Text("Inicio", color = Color.White) },
-                    selected = false,
-                    onClick = { scope.launch { drawerState.close() } },
-                    icon = { Icon(Icons.Default.Home, contentDescription = null, tint = Color.White) }
-                )
-                NavigationDrawerItem(
-                    label = { Text("Comprar tokens", color = Color.White) },
-                    selected = false,
-                    onClick = { scope.launch { drawerState.close() } },
-                    icon = { Icon(Icons.Default.ShoppingCart, contentDescription = null, tint = Color.White) }
-                )
-                NavigationDrawerItem(
-                    label = { Text("Editar perfil", color = Color.White) },
-                    selected = false,
-                    onClick = {
-                        scope.launch { drawerState.close() }
-                        navController.navigate("profile")
-                    },
-                    icon = { Icon(Icons.Default.Person, contentDescription = null, tint = Color.White) }
-                )
-                NavigationDrawerItem(
-                    label = { Text("Cerrar sesión", color = Color.White) },
-                    selected = false,
-                    onClick = {
-                        viewModel.logout()
-                        navController.navigate("login") {
-                            popUpTo("home") { inclusive = true }
-                        }
-                    },
-                    icon = { Icon(Icons.AutoMirrored.Filled.Logout, contentDescription = null, tint = Color.White) }
-                )
-            }
+            DrawerContent(
+                navController = navController,
+                viewModel     = viewModel,
+                scope         = scope,
+                drawerState   = drawerState
+            )
         }
     ) {
         Scaffold(
             topBar = {
                 HomeTopAppBar(
-                    userName = userName,
-                    userTokens = userTokens,
+                    userName    = userName,
+                    userTokens  = userTokens,
                     onMenuClick = { scope.launch { drawerState.open() } }
                 )
             },
-            snackbarHost = { SnackbarHost(snackbarHostState) },
             containerColor = MaterialTheme.colorScheme.background
         ) { padding ->
             Column(
@@ -126,52 +81,24 @@ fun HomeScreen(
                 horizontalAlignment = Alignment.Start
             ) {
                 Text(
-                    text = "Guía de Viajes Pet-Friendly 🐶",
+                    text     = "¡Bienvenid@ a PET EXPLORER 🐾!",
                     fontSize = 20.sp,
-                    color = MaterialTheme.colorScheme.onBackground,
-                    fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
-
                 Text(
-                    text = "Completa los campos y selecciona uno o varios intereses desplazándote lateralmente.",
+                    text     = "Completa los campos y selecciona uno o varios intereses desplazándote lateralmente.",
                     fontSize = 16.sp,
-                    color = MaterialTheme.colorScheme.onBackground,
                     modifier = Modifier.padding(bottom = 16.dp)
                 )
 
-                OutlinedTextField(
-                    value = selectedCountry,
-                    onValueChange = { selectedCountry = it },
-                    label = { Text("País", color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)) },
-                    leadingIcon = { Icon(Icons.Default.LocationOn, contentDescription = null, tint = MaterialTheme.colorScheme.onBackground) },
-                    modifier = Modifier.fillMaxWidth(),
-                    textStyle = LocalTextStyle.current.copy(color = MaterialTheme.colorScheme.onBackground),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = MaterialTheme.colorScheme.primary,
-                        unfocusedBorderColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
-                        cursorColor = MaterialTheme.colorScheme.primary
-                    )
+                // Ciudad y País
+                CityCountryInputs(
+                    selectedCountry = selectedCountryState,
+                    cityQuery       = cityQueryState
                 )
-
                 Spacer(modifier = Modifier.height(8.dp))
 
-                OutlinedTextField(
-                    value = cityQuery,
-                    onValueChange = { cityQuery = it },
-                    label = { Text("Ciudad", color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)) },
-                    leadingIcon = { Icon(Icons.Default.LocationOn, contentDescription = null, tint = MaterialTheme.colorScheme.onBackground) },
-                    modifier = Modifier.fillMaxWidth(),
-                    textStyle = LocalTextStyle.current.copy(color = MaterialTheme.colorScheme.onBackground),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = MaterialTheme.colorScheme.primary,
-                        unfocusedBorderColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
-                        cursorColor = MaterialTheme.colorScheme.primary
-                    )
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
+                // Intereses
                 InterestsSection(
                     museumsChecked = museumsChecked,
                     onMuseumsCheckedChange = { museumsChecked = it },
@@ -185,6 +112,10 @@ fun HomeScreen(
                     onBeachesCheckedChange = { beachesChecked = it },
                     hotelsChecked = hotelsChecked,
                     onHotelsCheckedChange = { hotelsChecked = it },
+                    pipicanChecked = pipicanChecked,
+                    onPipicanCheckedChange = { pipicanChecked = it },
+                    walkingZonesChecked = walkingZonesChecked,
+                    onWalkingZonesCheckedChange = { walkingZonesChecked = it },
                     vetsChecked = vetsChecked,
                     onVetsCheckedChange = { vetsChecked = it },
                     dogResortsChecked = dogResortsChecked,
@@ -192,57 +123,60 @@ fun HomeScreen(
                     groomersChecked = groomersChecked,
                     onGroomersCheckedChange = { groomersChecked = it }
                 )
-
                 Spacer(modifier = Modifier.height(16.dp))
 
-                Button(
-                    onClick = {
-                        if (cityQuery.text.isNotBlank()) {
-                            val interests = mutableListOf<String>().apply {
-                                if (museumsChecked) add("museos")
-                                if (restaurantsChecked) add("restaurantes")
-                                if (landmarksChecked) add("sitios emblemáticos")
-                                if (parksChecked) add("parques naturales")
-                                if (beachesChecked) add("playas")
-                                if (hotelsChecked) add("hoteles o campings")
-                                if (vetsChecked) add("veterinarios")
-                                if (dogResortsChecked) add("residencias caninas")
-                                if (groomersChecked) add("peluquerías caninas")
+                // Botón de Búsqueda
+                SearchButton(
+                    isLoading = false,
+                    onSearch  = {
+                        val ciudadRaw = cityQueryState.value.text.trim()
+                        val paisRaw   = selectedCountryState.value.trim()
+
+                        if (ciudadRaw.isNotBlank()) {
+                            // Preparamos intereses
+                            val interesesLista = mutableListOf<String>().apply {
+                                if (museumsChecked)     add("museos")
+                                if (restaurantsChecked) add("restaurantes admite mascotas")
+                                if (landmarksChecked)   add("lugares de interes y monumentos")
+                                if (parksChecked)       add("parques naturales")
+                                if (beachesChecked)     add("playas perros")
+                                if (hotelsChecked)      add("hoteles admite mascotas")
+                                if (pipicanChecked)     add("pipican")
+                                if (walkingZonesChecked) add("zonas paseo")
+                                if (vetsChecked)        add("veterinarios y hospitales veterinarios 24h")
+                                if (dogResortsChecked)  add("residencias caninas")
+                                if (groomersChecked)    add("peluquerías caninas")
+                            }
+                            val interesesRaw = interesesLista.joinToString(", ")
+                                .ifBlank { "lugares pet friendly" }
+
+                            // Codificamos y navegamos
+                            val ciudadEnc = Uri.encode(ciudadRaw)
+                            val paisEnc   = Uri.encode(paisRaw)
+                            val intEnc    = Uri.encode(interesesRaw)
+                            navController.navigate("result_screen/$ciudadEnc/$paisEnc/$intEnc") {
+                                popUpTo("home") { inclusive = false }
                             }
 
-                            val finalPrompt = buildString {
-                                append("Estoy viajando a ${cityQuery.text}, $selectedCountry con mi perro.")
-                                if (interests.isNotEmpty()) {
-                                    append(" Estoy interesado en: ${interests.joinToString(", ")}.")
-                                }
-                                append(" Dame recomendaciones de lugares, actividades y rutas turísticas adaptadas para viajar con perro.")
-                                append(" Incluye siempre que sea posible: Una descripción y valoración del sitio, un teléfono de contacto ([teléfono](tel:123456789)), una página web si existe, y la dirección como enlace de Google Maps ([dirección](geo:0,0?q=Dirección))).")
-                                append(" Confirma si aceptan perros.")
-                                append(" Si es un veterinario, peluquería o residencia canina, indica los servicios que ofrece.")
-                                append(" Devuélveme la respuesta en formato Markdown con títulos claros, listas y enlaces.")
-                            }
-
-                            viewModel.getTravelInformation(finalPrompt)
-                            navController.navigate("result_screen")
+                            // Limpiamos formulario
+                            cityQueryState.value = TextFieldValue("")
+                            selectedCountryState.value = "España"
+                            museumsChecked = false
+                            restaurantsChecked = false
+                            landmarksChecked = false
+                            parksChecked = false
+                            beachesChecked = false
+                            hotelsChecked = false
+                            pipicanChecked = false
+                            walkingZonesChecked = false
+                            vetsChecked = false
+                            dogResortsChecked = false
+                            groomersChecked = false
+                        } else {
+                            Log.w("HOME_SCREEN", "Ciudad vacía: sin búsqueda")
                         }
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    enabled = !isLoading,
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary,
-                        contentColor = MaterialTheme.colorScheme.onPrimary
-                    )
-                ) {
-                    if (isLoading) {
-                        CircularProgressIndicator(
-                            color = MaterialTheme.colorScheme.onPrimary,
-                            modifier = Modifier.size(20.dp)
-                        )
-                    } else {
-                        Text("Buscar")
                     }
-                }
-
+                )
                 Spacer(modifier = Modifier.height(24.dp))
             }
         }

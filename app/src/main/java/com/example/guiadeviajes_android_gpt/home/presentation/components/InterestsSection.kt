@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.DirectionsWalk
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -17,6 +18,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
+/**
+ * Sección de intereses organizada en tres filas:
+ * 1. Sitios emblemáticos
+ * 2. Experiencias al aire libre y alojamiento
+ * 3. Servicios para mascotas
+ */
 @Composable
 fun InterestsSection(
     museumsChecked: Boolean,
@@ -36,77 +43,84 @@ fun InterestsSection(
     dogResortsChecked: Boolean,
     onDogResortsCheckedChange: (Boolean) -> Unit,
     groomersChecked: Boolean,
-    onGroomersCheckedChange: (Boolean) -> Unit
+    onGroomersCheckedChange: (Boolean) -> Unit,
+    pipicanChecked: Boolean,
+    onPipicanCheckedChange: (Boolean) -> Unit,
+    walkingZonesChecked: Boolean,
+    onWalkingZonesCheckedChange: (Boolean) -> Unit
 ) {
-    // 🔹 Bloque superior: intereses generales
-    val generalItems = listOf(
+    // 1) Sitios emblemáticos
+    val emblematicItems = listOf(
         Triple("Museos", museumsChecked, onMuseumsCheckedChange) to Icons.Default.Museum,
         Triple("Restaurantes", restaurantsChecked, onRestaurantsCheckedChange) to Icons.Default.Restaurant,
-        Triple("Sitios emblemáticos", landmarksChecked, onLandmarksCheckedChange) to Icons.Default.LocationOn,
-        Triple("Parques naturales", parksChecked, onParksCheckedChange) to Icons.Default.Forest,
-        Triple("Playas", beachesChecked, onBeachesCheckedChange) to Icons.Default.BeachAccess,
-        Triple("Hoteles o Campings", hotelsChecked, onHotelsCheckedChange) to Icons.Default.Hotel
+        Triple("Emblemáticos", landmarksChecked, onLandmarksCheckedChange) to Icons.Default.LocationOn
     )
-
     Text(
-        text = "Desplázate lateralmente y marca uno o varios intereses según tus necesidades:",
+        text = "Explora lo más típico:",
         fontSize = 14.sp,
         fontWeight = FontWeight.Medium,
         color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
         modifier = Modifier.padding(bottom = 8.dp)
     )
-
     LazyRow(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         modifier = Modifier.fillMaxWidth()
     ) {
-        items(generalItems) { (item, icon) ->
+        items(emblematicItems) { (item, icon) ->
             val (label, isChecked, onCheckedChange) = item
-            InterestItem(
-                label = label,
-                isSelected = isChecked,
-                onClick = onCheckedChange,
-                icon = icon
-            )
+            InterestItem(label, isChecked, onCheckedChange, icon)
         }
     }
 
     Spacer(modifier = Modifier.height(16.dp))
 
-    // 🔹 Bloque inferior: servicios para perros
-    val specialItems = listOf(
-        Triple("Veterinarios", vetsChecked, onVetsCheckedChange) to Icons.Default.MedicalServices,
-        Triple("Peluquerías caninas", groomersChecked, onGroomersCheckedChange) to Icons.Default.ContentCut,
-        Triple("Residencias caninas", dogResortsChecked, onDogResortsCheckedChange) to Icons.Default.Pets
+    // 2) Experiencias outdoor y alojamiento
+    val outdoorItems = listOf(
+        Triple("Parques naturales", parksChecked, onParksCheckedChange) to Icons.Default.Forest,
+        Triple("Playas perros", beachesChecked, onBeachesCheckedChange) to Icons.Default.BeachAccess,
+        Triple("Hoteles/Campings", hotelsChecked, onHotelsCheckedChange) to Icons.Default.Hotel,
+        Triple("Pipican", pipicanChecked, onPipicanCheckedChange) to Icons.Default.Pets,
+        Triple("Zonas paseo", walkingZonesChecked, onWalkingZonesCheckedChange) to Icons.AutoMirrored.Filled.DirectionsWalk
     )
-
     Text(
-        text = "Servicios especiales para tu perro (¡importante!):",
+        text = "Al aire libre y hospedaje:",
+        fontSize = 14.sp,
+        fontWeight = FontWeight.Medium,
+        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
+        modifier = Modifier.padding(bottom = 8.dp)
+    )
+    LazyRow(
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        items(outdoorItems) { (item, icon) ->
+            val (label, isChecked, onCheckedChange) = item
+            InterestItem(label, isChecked, onCheckedChange, icon)
+        }
+    }
+
+    Spacer(modifier = Modifier.height(16.dp))
+
+    // 3) Servicios para mascotas
+    val serviceItems = listOf(
+        Triple("Veterinarios", vetsChecked, onVetsCheckedChange) to Icons.Default.LocalHospital,
+        Triple("Peluquería canina", groomersChecked, onGroomersCheckedChange) to Icons.Default.ContentCut,
+        Triple("Residencia canina", dogResortsChecked, onDogResortsCheckedChange) to Icons.Default.Home
+    )
+    Text(
+        text = "Servicios para tu mascota:",
         fontSize = 14.sp,
         fontWeight = FontWeight.Medium,
         color = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f),
         modifier = Modifier.padding(bottom = 8.dp)
     )
-
     LazyRow(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         modifier = Modifier.fillMaxWidth()
     ) {
-        items(specialItems) { (item, icon) ->
+        items(serviceItems) { (item, icon) ->
             val (label, isChecked, onCheckedChange) = item
-            val backgroundColor = when {
-                label == "Veterinarios" && isChecked -> Color.Red.copy(alpha = 0.6f)
-                label == "Veterinarios" && !isChecked -> Color.Red.copy(alpha = 0.15f) // 🔴 Suave de fondo si no está seleccionado
-                isChecked -> Color(0xFF90CAF9) // Azul clarito para seleccionados
-                else -> Color.Transparent
-            }
-            InterestItem(
-                label = label,
-                isSelected = isChecked,
-                onClick = onCheckedChange,
-                icon = icon,
-                highlightColor = backgroundColor
-            )
+            InterestItem(label, isChecked, onCheckedChange, icon)
         }
     }
 }
@@ -116,42 +130,37 @@ private fun InterestItem(
     label: String,
     isSelected: Boolean,
     onClick: (Boolean) -> Unit,
-    icon: ImageVector,
-    highlightColor: Color = Color.Transparent
+    icon: ImageVector
 ) {
-    val backgroundColor = highlightColor.takeIf { it != Color.Transparent }
-        ?: if (isSelected) Color(0xFF90CAF9) else Color.Transparent
-
+    // Destacar "Veterinarios" en tonos de rojo
+    val bg = when (label) {
+        "Veterinarios" -> if (isSelected) Color.Red.copy(alpha = 0.6f) else Color.Red.copy(alpha = 0.15f)
+        else -> if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.2f) else Color.Transparent
+    }
     Card(
         shape = MaterialTheme.shapes.medium,
-        colors = CardDefaults.cardColors(containerColor = backgroundColor),
+        colors = CardDefaults.cardColors(containerColor = bg),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         modifier = Modifier
-            .size(width = 90.dp, height = 90.dp)
+            .size(100.dp)
             .clickable { onClick(!isSelected) }
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(4.dp),
+                .padding(8.dp),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Icon(
-                icon,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onBackground,
-                modifier = Modifier.size(22.dp)
-            )
-            Spacer(modifier = Modifier.height(2.dp))
+            Icon(icon, contentDescription = null, modifier = Modifier.size(24.dp))
+            Spacer(Modifier.height(4.dp))
             Text(
                 text = label,
-                color = MaterialTheme.colorScheme.onBackground,
-                fontSize = 11.sp,
-                lineHeight = 13.sp,
+                fontSize = 12.sp,
                 fontWeight = FontWeight.Medium,
+                textAlign = TextAlign.Center,
                 maxLines = 2,
-                textAlign = TextAlign.Center // 🟢 Centrar completamente el texto multi-línea
+                color = MaterialTheme.colorScheme.onBackground
             )
         }
     }

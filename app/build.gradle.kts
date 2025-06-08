@@ -35,8 +35,12 @@ android {
         val localProperties = Properties().apply {
             load(rootProject.file("local.properties").inputStream())
         }
+
         val apiKey = localProperties["API_KEY"] as String
+        val apiKeyG = localProperties["API_KEYG"] as String
+
         buildConfigField("String", "API_KEY", "\"$apiKey\"")
+        buildConfigField("String", "API_KEYG", "\"$apiKeyG\"")
     }
 
     buildTypes {
@@ -86,6 +90,7 @@ dependencies {
     // Retrofit y Moshi
     implementation(libs.retrofit)
     implementation(libs.retrofit.moshi.converter)
+    implementation(libs.retrofit.gson.converter)
     implementation(libs.moshi)
     implementation(libs.firebase.auth)
     implementation(libs.firebase.database)
@@ -119,7 +124,9 @@ dependencies {
     implementation(libs.firebase.analytics)
     implementation(libs.androidx.compose.animation)
     implementation(libs.androidx.compose.ui.text)
-
+    implementation(libs.places.sdk)
+    implementation(libs.material)
 
 
 }
+

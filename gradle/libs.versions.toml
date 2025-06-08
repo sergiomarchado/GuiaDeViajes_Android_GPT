@@ -10,22 +10,25 @@ coreKtx = "1.16.0"
 junit = "4.13.2"
 junitVersion = "1.2.1"
 espressoCore = "3.6.1"
-lifecycleRuntimeKtx = "2.9.0"
+lifecycleRuntimeKtx = "2.9.1"
 activityCompose = "1.10.1"
-composeBom = "2025.05.01"
+composeBom = "2025.06.00"
+material = "1.12.0"
 materialIconsExtended = "1.7.8"
 moshi = "1.15.2"
 moshiKotlinCodegen = "1.15.2"
 retrofit = "3.0.0"
 retrofitMoshiConverter = "2.11.0"
+retrofitGsonConverter = "2.9.0"
 okhttpLoggingInterceptor = "4.12.0"
-androidx-navigation = "2.9.0"
+androidxNavigation = "2.9.0"
 kotlinxSerializationJson = "1.6.3"
 roomCompiler = "2.7.1"
 googleGmsGoogleServices = "4.4.2"
 firebaseAuth = "23.2.1"
 firebaseDatabase = "21.0.0"
-compose-ui-text = "1.8.2"
+composeUiText = "1.8.2"
+places = "4.3.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -40,17 +43,19 @@ androidx-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-toolin
 androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
 androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
-androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "androidx-navigation" }
+androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "androidxNavigation" }
 commonmark = { module = "org.commonmark:commonmark", version.ref = "commonmark" }
 firebase-analytics = { module = "com.google.firebase:firebase-analytics" }
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
 hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
 hilt-compiler = { group = "com.google.dagger", name = "hilt-compiler", version.ref = "hilt" }
 androidx-hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
+material = { module = "com.google.android.material:material", version.ref = "material" }
 moshi = { module = "com.squareup.moshi:moshi", version.ref = "moshi" }
 moshi-kotlin-codegen = { module = "com.squareup.moshi:moshi-kotlin-codegen", version.ref = "moshiKotlinCodegen" }
 retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }
 retrofit-moshi-converter = { group = "com.squareup.retrofit2", name = "converter-moshi", version.ref = "retrofitMoshiConverter" }
+retrofit-gson-converter = { group = "com.squareup.retrofit2", name = "converter-gson", version.ref = "retrofitGsonConverter" }
 okhttp-logging-interceptor = { group = "com.squareup.okhttp3", name = "logging-interceptor", version.ref = "okhttpLoggingInterceptor" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -60,7 +65,8 @@ androidx-room-compiler = { group = "androidx.room", name = "room-compiler", vers
 firebase-auth = { group = "com.google.firebase", name = "firebase-auth", version.ref = "firebaseAuth" }
 firebase-database = { group = "com.google.firebase", name = "firebase-database", version.ref = "firebaseDatabase" }
 androidx-compose-animation = { group = "androidx.compose.animation", name = "animation" }
-androidx-compose-ui-text = { module = "androidx.compose.ui:ui-text", version.ref = "compose-ui-text" }
+androidx-compose-ui-text = { module = "androidx.compose.ui:ui-text", version.ref = "composeUiText" }
+places-sdk = { group = "com.google.android.libraries.places", name = "places", version.ref = "places" }
 
 
 [plugins]

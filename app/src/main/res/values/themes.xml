@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.GuiaDeViajes_Android_GPT" parent="android:Theme.Material.Light.NoActionBar" />
+    <style name="Theme.GuiaDeViajes_Android_GPT" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Aquí puedes personalizar colores si quieres -->
+        <!-- <item name="colorPrimary">@color/primary</item> -->
+        <!-- <item name="colorSecondary">@color/secondary</item> -->
+    </style>
+
 </resources>

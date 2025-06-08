@@ -12,29 +12,17 @@ import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import java.util.concurrent.TimeUnit
+import javax.inject.Named
 import javax.inject.Singleton
 
 @InstallIn(SingletonComponent::class)
 @Module
 object TravelGuideModule {
 
-    // ✅ Interceptor para logs de red (solo si es debug)
     @Provides
     @Singleton
-    fun provideHttpLoggingInterceptor(): HttpLoggingInterceptor {
-        return HttpLoggingInterceptor().apply {
-            level = if (BuildConfig.DEBUG) {
-                HttpLoggingInterceptor.Level.BODY
-            } else {
-                HttpLoggingInterceptor.Level.NONE
-            }
-        }
-    }
-
-    // ✅ Interceptor para añadir la API Key a cada petición
-    @Provides
-    @Singleton
-    fun provideAuthorizationInterceptor(): Interceptor {
+    @Named("ChatGptAuthInterceptor")
+    fun provideChatGptAuthInterceptor(): Interceptor {
         return Interceptor { chain ->
             val newRequest = chain.request().newBuilder()
                 .addHeader("Authorization", "Bearer ${BuildConfig.API_KEY}")
@@ -43,26 +31,31 @@ object TravelGuideModule {
         }
     }
 
-    // ✅ Cliente OkHttp con timeouts configurados y los interceptores añadidos
     @Provides
     @Singleton
-    fun provideOkHttpClient(
-        authInterceptor: Interceptor,
-        loggingInterceptor: HttpLoggingInterceptor
+    @Named("ChatGptOkHttpClient")
+    fun provideChatGptOkHttpClient(
+        @Named("ChatGptAuthInterceptor") authInterceptor: Interceptor
     ): OkHttpClient {
+        val loggingInterceptor = HttpLoggingInterceptor().apply {
+            level = if (BuildConfig.DEBUG) HttpLoggingInterceptor.Level.BODY else HttpLoggingInterceptor.Level.NONE
+        }
+
         return OkHttpClient.Builder()
-            .connectTimeout(30, TimeUnit.SECONDS) // conexión
-            .readTimeout(30, TimeUnit.SECONDS)    // lectura
-            .writeTimeout(30, TimeUnit.SECONDS)   // escritura
+            .connectTimeout(30, TimeUnit.SECONDS)
+            .readTimeout(30, TimeUnit.SECONDS)
+            .writeTimeout(30, TimeUnit.SECONDS)
             .addInterceptor(authInterceptor)
             .addInterceptor(loggingInterceptor)
             .build()
     }
 
-    // ✅ Retrofit configurado con Moshi y el cliente
     @Provides
     @Singleton
-    fun provideRetrofit(client: OkHttpClient): Retrofit {
+    @Named("ChatGptRetrofit")
+    fun provideChatGptRetrofit(
+        @Named("ChatGptOkHttpClient") client: OkHttpClient
+    ): Retrofit {
         return Retrofit.Builder()
             .baseUrl(ChatgptApi.BASE_URL)
             .addConverterFactory(MoshiConverterFactory.create())
@@ -70,10 +63,11 @@ object TravelGuideModule {
             .build()
     }
 
-    // ✅ Instancia del servicio ChatgptApi
     @Provides
     @Singleton
-    fun provideChatgptApi(retrofit: Retrofit): ChatgptApi {
+    fun provideChatgptApi(
+        @Named("ChatGptRetrofit") retrofit: Retrofit
+    ): ChatgptApi {
         return retrofit.create(ChatgptApi::class.java)
     }
 }
