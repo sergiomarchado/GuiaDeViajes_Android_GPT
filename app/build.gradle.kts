@@ -127,6 +127,9 @@ dependencies {
     implementation(libs.places.sdk)
     implementation(libs.material)
 
+    // Accompanist: para controlar color de status & navigation bar
+    implementation(libs.accompanist.systemuicontroller)
+
 
 }
 

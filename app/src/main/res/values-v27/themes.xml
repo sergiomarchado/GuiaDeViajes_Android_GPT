@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+        <style name="Theme.GuiaDeViajes" parent="Theme.Material3.DayNight.NoActionBar">
+                <!-- … tus otras propiedades de theme … -->
+
+                <!-- Barra de navegación -->
+                <item name="android:navigationBarColor">@color/azul_oscuro</item>
+                <item name="android:windowLightNavigationBar">false</item>
+
+                <!-- (opcional) Status bar, si quieres unificarla también -->
+                <item name="android:statusBarColor">@color/azul_oscuro</item>
+                <item name="android:windowLightStatusBar">false</item>
+        </style>
+</resources>

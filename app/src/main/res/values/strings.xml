@@ -1,4 +1,8 @@
 <resources>
     <string name="app_name">PetExplorer</string>
     <string name="title_activity_home_screen">Home Screen</string>
+    <string name="nav_home">Inicio</string>
+    <string name="nav_map">Mapa</string>
+    <string name="nav_profile">Perfil</string>
+    <string name="nav_promotions">Promociones</string>
 </resources>

@@ -10,25 +10,32 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
+import com.example.guiadeviajes_android_gpt.navigation.BottomNavigationBar
 import com.example.guiadeviajes_android_gpt.profile.viewmodel.ProfileViewModel
 import com.example.guiadeviajes_android_gpt.home.presentation.components.HomeTopAppBar
+import com.example.guiadeviajes_android_gpt.navigation.BottomBarScreen
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 @Composable
 fun ProfileScreen(
+    navController: NavController,
     drawerState: DrawerState,
     scope: CoroutineScope,
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
-    val userProfile   by viewModel.userProfile.collectAsState()
-    val isLoading     by viewModel.isLoading.collectAsState()
-    val errorMessage  by viewModel.errorMessage.collectAsState()
+    // Estado del perfil
+    val userProfile  by viewModel.userProfile.collectAsState()
+    val isLoading    by viewModel.isLoading.collectAsState()
+    val errorMessage by viewModel.errorMessage.collectAsState()
 
+    // Campos editables
     var firstName by remember { mutableStateOf(userProfile.firstName) }
     var lastName  by remember { mutableStateOf(userProfile.lastName) }
     var phone     by remember { mutableStateOf(userProfile.phone) }
 
+    // Control para habilitar el botón Guardar
     val isSaveEnabled = firstName.isNotBlank() && lastName.isNotBlank() && !isLoading
 
     LaunchedEffect(userProfile) {
@@ -40,8 +47,8 @@ fun ProfileScreen(
     Scaffold(
         topBar = {
             HomeTopAppBar(
-                userName   = "${userProfile.firstName} ${userProfile.lastName}",
-                userTokens = userProfile.tokens,
+                userName    = "${userProfile.firstName} ${userProfile.lastName}",
+                userTokens  = userProfile.tokens,
                 onMenuClick = { scope.launch { drawerState.open() } }
             )
         },
@@ -50,15 +57,11 @@ fun ProfileScreen(
         Column(
             Modifier
                 .fillMaxSize()
-                .padding(padding)
                 .verticalScroll(rememberScrollState())
+                .padding(padding)
                 .padding(16.dp)
         ) {
-            Text(
-                text = "Tu perfil",
-                style = MaterialTheme.typography.titleLarge,
-                fontSize = 22.sp
-            )
+            Text("Tu perfil", style = MaterialTheme.typography.titleLarge, fontSize = 22.sp)
             Spacer(Modifier.height(24.dp))
 
             OutlinedTextField(
@@ -92,7 +95,6 @@ fun ProfileScreen(
                 label = { Text("Teléfono") },
                 modifier = Modifier.fillMaxWidth()
             )
-
             Spacer(Modifier.height(24.dp))
 
             Button(
@@ -112,19 +114,13 @@ fun ProfileScreen(
             ) {
                 Text("Guardar", fontSize = 16.sp)
             }
-
             if (isLoading) {
                 Spacer(Modifier.height(16.dp))
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
             }
-
             errorMessage?.let { msg ->
                 Spacer(Modifier.height(16.dp))
-                Text(
-                    text = msg,
-                    color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodyMedium
-                )
+                Text(text = msg, color = MaterialTheme.colorScheme.error)
             }
         }
     }

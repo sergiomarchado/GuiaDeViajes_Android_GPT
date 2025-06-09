@@ -1,7 +1,8 @@
 [versions]
+accompanistSystemUiController = "0.30.1"
 agp = "8.10.1"
 commonmark = "0.21.0"
-firebaseBom = "33.14.0"
+firebaseBom = "33.15.0"
 hilt = "2.56.2"
 hiltNavigationCompose = "1.2.0"
 ksp = "2.0.21-1.0.27"
@@ -67,6 +68,7 @@ firebase-database = { group = "com.google.firebase", name = "firebase-database",
 androidx-compose-animation = { group = "androidx.compose.animation", name = "animation" }
 androidx-compose-ui-text = { module = "androidx.compose.ui:ui-text", version.ref = "composeUiText" }
 places-sdk = { group = "com.google.android.libraries.places", name = "places", version.ref = "places" }
+accompanist-systemuicontroller = { group = "com.google.accompanist", name = "accompanist-systemuicontroller", version.ref = "accompanistSystemUiController" }
 
 
 [plugins]

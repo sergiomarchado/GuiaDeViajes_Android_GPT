@@ -20,55 +20,59 @@ import com.example.guiadeviajes_android_gpt.R
 fun HomeTopAppBar(
     userName: String,
     userTokens: Int,
-    onMenuClick: () -> Unit
+    onMenuClick: () -> Unit,
+    backgroundColor: Color = Color(0xFF011A30)
 ) {
     TopAppBar(
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = Color(0xFF011A30),
-            titleContentColor = Color.White
+            containerColor             = backgroundColor,
+            navigationIconContentColor = Color.White,
+            titleContentColor          = Color.White,
+            actionIconContentColor     = Color.White
         ),
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(100.dp),
         title = {
             Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(65.dp),
+                Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
                 Image(
-                    painter = painterResource(id = R.drawable.icono_fav),
+                    painter           = painterResource(id = R.drawable.icono_fav),
                     contentDescription = null,
-                    modifier = Modifier
-                        .size(48.dp)
+                    modifier          = Modifier
+                        .size(58.dp)
                         .align(Alignment.CenterStart)
                 )
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.align(Alignment.Center)
+                    modifier          = Modifier.align(Alignment.Center)
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Person,
-                        contentDescription = null,
-                        tint = Color.White,
-                        modifier = Modifier.size(26.dp)
+                        imageVector         = Icons.Default.Person,
+                        contentDescription  = null,
+                        tint                = Color.White,
+                        modifier            = Modifier.size(28.dp)
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = "$userName ($userTokens tokens)",
-                        color = Color.White,
-                        fontSize = 18.sp
+                        text     = "$userName ($userTokens tokens)",
+                        color    = Color.White,
+                        fontSize = 14.sp
                     )
                 }
                 IconButton(
                     onClick = onMenuClick,
                     modifier = Modifier
-                        .size(50.dp)
+                        .size(70.dp)
                         .align(Alignment.CenterEnd)
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Menu,
+                        imageVector        = Icons.Default.Menu,
                         contentDescription = "Menú",
-                        tint = Color.White,
-                        modifier = Modifier.size(32.dp)
+                        tint               = Color.White,
+                        modifier           = Modifier.size(40.dp)
                     )
                 }
             }

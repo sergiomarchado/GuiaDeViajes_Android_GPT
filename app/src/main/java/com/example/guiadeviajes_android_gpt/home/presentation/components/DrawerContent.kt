@@ -22,6 +22,7 @@ import com.example.guiadeviajes_android_gpt.home.presentation.HomeViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import androidx.compose.ui.text.font.FontWeight
+import com.example.guiadeviajes_android_gpt.navigation.BottomBarScreen
 
 @Composable
 fun DrawerContent(
@@ -90,7 +91,7 @@ fun DrawerContent(
             onClick  = {
                 scope.launch {
                     drawerState.close()
-                    navController.navigate("profile")
+                    navController.navigate(BottomBarScreen.Profile.route)
                 }
             },
             icon     = { Icon(Icons.Default.Person, contentDescription = null, tint = Color.White) }
