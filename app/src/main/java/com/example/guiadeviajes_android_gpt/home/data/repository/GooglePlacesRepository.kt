@@ -9,18 +9,16 @@ import javax.inject.Inject
 class GooglePlacesRepository @Inject constructor(
     private val api: GooglePlacesApi
 ) {
-    /**
-     * Text Search con sesgo opcional de ubicación.
-     */
-    suspend fun searchPlaces(
+
+    private suspend fun searchPlaces(
         query: String,
         location: String? = null,
         radius: Int? = null
     ): List<SimplePlaceResult> {
         return try {
             val response = api.searchPlaces(
-                query   = query,
-                apiKey  = BuildConfig.API_KEYG,
+                query    = query,
+                apiKey   = BuildConfig.API_KEYG,
                 location = location,
                 radius   = radius
             )
@@ -47,14 +45,11 @@ class GooglePlacesRepository @Inject constructor(
         }
     }
 
-    /**
-     * Find Place from Text como fallback: obtenemos place_id y lo detallamos.
-     */
     private suspend fun findPlaceByText(query: String): List<SimplePlaceResult> {
         return try {
             val resp = api.findPlaceFromText(
-                input     = query,
-                apiKey    = BuildConfig.API_KEYG
+                input  = query,
+                apiKey = BuildConfig.API_KEYG
             )
             if (resp.isSuccessful) {
                 val candidates = resp.body()?.candidates.orEmpty()
@@ -74,9 +69,6 @@ class GooglePlacesRepository @Inject constructor(
         }
     }
 
-    /**
-     * Detalla un placeId.
-     */
     suspend fun getPlaceDetails(placeId: String): SimplePlaceResult? {
         return try {
             val response = api.getPlaceDetails(
@@ -104,38 +96,22 @@ class GooglePlacesRepository @Inject constructor(
         }
     }
 
-    /**
-     * Nearby Search genérico.
-     */
-    suspend fun searchNearby(
+    private suspend fun searchNearby(
         lat: Double,
         lng: Double,
-        radius: Int = 20000,
+        radius: Int = 20_000,
         type: String,
-        keyword: String? = null,
-        rankByDistance: Boolean = false
+        keyword: String? = null
     ): List<SimplePlaceResult> {
         return try {
             val location = "$lat,$lng"
-            val response = if (rankByDistance) {
-                api.nearbySearch(
-                    location = location,
-                    radius = null,
-                    type = type,
-                    keyword = keyword,
-                    apiKey = BuildConfig.API_KEYG,
-                    // note: Retrofit will omit null radius, but Google requires rankby=distance
-                    // we could add another param rankby if needed
-                )
-            } else {
-                api.nearbySearch(
-                    location = location,
-                    radius = radius,
-                    type = type,
-                    keyword = keyword,
-                    apiKey = BuildConfig.API_KEYG
-                )
-            }
+            val response = api.nearbySearch(
+                location = location,
+                radius   = radius,
+                type     = type,
+                keyword  = keyword,
+                apiKey   = BuildConfig.API_KEYG
+            )
             if (response.isSuccessful) {
                 val results = response.body()?.results.orEmpty()
                 Log.d("PLACES_API", "✅ Nearby($type) found: ${results.size}")
@@ -159,10 +135,7 @@ class GooglePlacesRepository @Inject constructor(
         }
     }
 
-    /**
-     * Geocoding.
-     */
-    suspend fun geocodeAddress(address: String): Pair<Double, Double>? {
+    private suspend fun geocodeAddress(address: String): Pair<Double, Double>? {
         return try {
             val response = api.geocode(address, BuildConfig.API_KEYG)
             if (response.isSuccessful) {
@@ -171,9 +144,7 @@ class GooglePlacesRepository @Inject constructor(
                     ?.geometry
                     ?.location
                     ?.let { Pair(it.lat, it.lng) }
-                    .also {
-                        if (it == null) Log.w("GEOCODING", "No coords para '$address'")
-                    }
+                    .also { if (it == null) Log.w("GEOCODING", "No coords para '$address'") }
             } else {
                 Log.e("GEOCODING", "❌ Error Geocoding: ${response.errorBody()?.string()}")
                 null
@@ -184,51 +155,67 @@ class GooglePlacesRepository @Inject constructor(
         }
     }
 
-    /**
-     * Flujo completo de búsqueda, integrando fallback con FindPlace y Nearby.
-     */
     suspend fun smartSearch(
         interests: String,
         city: String,
-        country: String
+        country: String,
+        maxResults: Int = 10
     ): List<SimplePlaceResult> {
-        // 1) Intentar Find Place (fallback ligero)
+        val collected = mutableListOf<SimplePlaceResult>()
         val rawQuery = "$interests $city $country"
-        var results = findPlaceByText(rawQuery)
-        if (results.isNotEmpty()) return results
 
-        // 2) Text Search básico sin codificar, con bias si tenemos coords
-        results = searchPlaces(rawQuery)
-        if (results.isNotEmpty()) return results
+        // 1) Find Place rápido
+        collected += findPlaceByText(rawQuery)
 
-        // 3) Si sigue vacío, sesgo de ubicación
-        geocodeAddress("$city, $country")?.let { (lat, lng) ->
-            // Nearby según tipo
-            when {
-                interests.contains("restaurantes", ignoreCase = true) -> {
-                    results = searchNearby(lat, lng, type = "restaurant", keyword = "pet")
+        // 2) Text Search básico
+        collected += searchPlaces(rawQuery)
+
+        // 3) Sesgo de ubicación + Nearby según interés
+        if (collected.size < maxResults) {
+            geocodeAddress("$city, $country")?.let { (lat, lng) ->
+                when {
+                    interests.contains("restaurantes", ignoreCase = true) ->
+                        collected += searchNearby(lat, lng, type = "restaurant", keyword = "pet")
+                    interests.contains("playas", ignoreCase = true) ->
+                        collected += searchNearby(lat, lng, type = "beach", keyword = "dog")
+                    interests.contains("parques", ignoreCase = true) ->
+                        collected += searchNearby(lat, lng, type = "park", keyword = "dog")
+                    interests.contains("hoteles", ignoreCase = true) ->
+                        collected += searchNearby(lat, lng, type = "lodging", keyword = "pet")
+                    interests.contains("campings", ignoreCase = true) ->
+                        collected += searchNearby(lat, lng, type = "campground", keyword = "pet")
+                    interests.contains("veterinarios", ignoreCase = true) ->
+                        collected += searchNearby(lat, lng, type = "veterinary_care")
+                    interests.contains("hospitales veterinarios", ignoreCase = true) ->
+                        collected += searchNearby(lat, lng, type = "veterinary_care", keyword = "24h")
+                    interests.contains("peluquerías", ignoreCase = true) ->
+                        collected += searchNearby(lat, lng, type = "pet_store", keyword = "groomer")
+                    interests.contains("residencias", ignoreCase = true) ->
+                        collected += searchNearby(lat, lng, type = "pet_boarding")
+                    interests.contains("tiendas de piensos", ignoreCase = true) ->
+                        collected += searchNearby(lat, lng, type = "pet_store", keyword = "food")
                 }
-                interests.contains("playas", ignoreCase = true) -> {
-                    results = searchNearby(lat, lng, type = "beach", keyword = "dog")
-                }
-                interests.contains("parques", ignoreCase = true) -> {
-                    results = searchNearby(lat, lng, type = "park", keyword = "dog")
-                }
-                // otros casos…
-            }
-            // bias en TextSearch
-            if (results.isEmpty()) {
-                results = searchPlaces(rawQuery, location = "$lat,$lng", radius = 10000)
+                // y bias en TextSearch
+                collected += searchPlaces(rawQuery, location = "$lat,$lng", radius = 10_000)
             }
         }
-        // 4) Último fallback: queries lingüísticas
-        if (results.isEmpty()) {
+
+        // 4) Último fallback lingüístico
+        if (collected.size < maxResults) {
             val fallback = when {
-                interests.contains("restaurantes", ignoreCase = true) -> "pet friendly restaurants in $city $country"
-                else -> "$interests pet friendly $city $country"
+                interests.contains("campings", ignoreCase = true) ->
+                    "pet friendly campgrounds in $city $country"
+                interests.contains("tiendas de piensos", ignoreCase = true) ->
+                    "pet food stores in $city $country"
+                else ->
+                    "$interests pet friendly $city $country"
             }
-            results = searchPlaces(fallback)
+            collected += searchPlaces(fallback)
         }
-        return results
+
+        // 5) Desduplicar y limitar
+        return collected
+            .distinctBy { it.placeId }
+            .take(maxResults)
     }
 }

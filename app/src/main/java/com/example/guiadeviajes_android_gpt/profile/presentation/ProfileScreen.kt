@@ -1,60 +1,65 @@
 package com.example.guiadeviajes_android_gpt.profile.presentation
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavController
 import com.example.guiadeviajes_android_gpt.profile.viewmodel.ProfileViewModel
+import com.example.guiadeviajes_android_gpt.home.presentation.components.HomeTopAppBar
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
-    navController: NavController,
+    drawerState: DrawerState,
+    scope: CoroutineScope,
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
-    val userProfile by viewModel.userProfile.collectAsState()
-    val isLoading by viewModel.isLoading.collectAsState()
-    val errorMessage by viewModel.errorMessage.collectAsState()
+    val userProfile   by viewModel.userProfile.collectAsState()
+    val isLoading     by viewModel.isLoading.collectAsState()
+    val errorMessage  by viewModel.errorMessage.collectAsState()
 
     var firstName by remember { mutableStateOf(userProfile.firstName) }
-    var lastName by remember { mutableStateOf(userProfile.lastName) }
-    var phone by remember { mutableStateOf(userProfile.phone) }
+    var lastName  by remember { mutableStateOf(userProfile.lastName) }
+    var phone     by remember { mutableStateOf(userProfile.phone) }
 
-    // Control para habilitar el botón Guardar
     val isSaveEnabled = firstName.isNotBlank() && lastName.isNotBlank() && !isLoading
 
     LaunchedEffect(userProfile) {
         firstName = userProfile.firstName
-        lastName = userProfile.lastName
-        phone = userProfile.phone
+        lastName  = userProfile.lastName
+        phone     = userProfile.phone
     }
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("Perfil") },
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Atrás")
-                    }
-                }
+            HomeTopAppBar(
+                userName   = "${userProfile.firstName} ${userProfile.lastName}",
+                userTokens = userProfile.tokens,
+                onMenuClick = { scope.launch { drawerState.open() } }
             )
         },
         containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
         Column(
-            modifier = Modifier
+            Modifier
                 .fillMaxSize()
                 .padding(padding)
+                .verticalScroll(rememberScrollState())
                 .padding(16.dp)
         ) {
-            Text("Datos del usuario", style = MaterialTheme.typography.titleLarge)
-            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = "Tu perfil",
+                style = MaterialTheme.typography.titleLarge,
+                fontSize = 22.sp
+            )
+            Spacer(Modifier.height(24.dp))
 
             OutlinedTextField(
                 value = firstName,
@@ -62,7 +67,7 @@ fun ProfileScreen(
                 label = { Text("Nombre") },
                 modifier = Modifier.fillMaxWidth()
             )
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(Modifier.height(12.dp))
 
             OutlinedTextField(
                 value = lastName,
@@ -70,7 +75,7 @@ fun ProfileScreen(
                 label = { Text("Apellidos") },
                 modifier = Modifier.fillMaxWidth()
             )
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(Modifier.height(12.dp))
 
             OutlinedTextField(
                 value = userProfile.email,
@@ -79,7 +84,7 @@ fun ProfileScreen(
                 enabled = false,
                 modifier = Modifier.fillMaxWidth()
             )
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(Modifier.height(12.dp))
 
             OutlinedTextField(
                 value = phone,
@@ -88,33 +93,35 @@ fun ProfileScreen(
                 modifier = Modifier.fillMaxWidth()
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(Modifier.height(24.dp))
 
             Button(
                 onClick = {
                     viewModel.updateUserProfile(
                         userProfile.copy(
                             firstName = firstName,
-                            lastName = lastName,
-                            phone = phone
+                            lastName  = lastName,
+                            phone     = phone
                         )
                     )
                 },
-                modifier = Modifier.fillMaxWidth(),
-                enabled = isSaveEnabled
+                enabled = isSaveEnabled,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp)
             ) {
-                Text("Guardar")
+                Text("Guardar", fontSize = 16.sp)
             }
 
             if (isLoading) {
-                Spacer(modifier = Modifier.height(16.dp))
-                CircularProgressIndicator()
+                Spacer(Modifier.height(16.dp))
+                CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
             }
 
-            errorMessage?.let { message ->
-                Spacer(modifier = Modifier.height(16.dp))
+            errorMessage?.let { msg ->
+                Spacer(Modifier.height(16.dp))
                 Text(
-                    text = message,
+                    text = msg,
                     color = MaterialTheme.colorScheme.error,
                     style = MaterialTheme.typography.bodyMedium
                 )

@@ -10,7 +10,8 @@ import javax.inject.Inject
 
 /**
  * Repositorio que formatea una lista de lugares en Markdown,
- * pidiéndole a ChatGPT un formato conciso con los campos esenciales.
+ * pidiéndole a ChatGPT un formato conciso con los campos esenciales,
+ * y post-procesa para hacer clicables los teléfonos.
  */
 class TravelGuideRepository @Inject constructor(
     private val chatGptApi: ChatgptApi
@@ -80,21 +81,34 @@ class TravelGuideRepository @Inject constructor(
 
         Log.d("TravelGuideRepo", "⏳ Enviando ${toSend.size} lugares a ChatGPT")
 
-        return try {
+        val markdown = try {
             val response: ChatiResponseDto = chatGptApi.getTravelInformation(requestBody)
-            val markdown = response.choices
+            response.choices
                 .firstOrNull()
                 ?.message
                 ?.content
                 .orEmpty()
-
-            Log.d("TravelGuideRepo", "✅ Markdown length=${markdown.length}")
-            Log.v("TravelGuideRepo", "📄 Markdown:\n$markdown")
-
-            markdown
+                .also {
+                    Log.d("TravelGuideRepo", "✅ Markdown length=${it.length}")
+                    Log.v("TravelGuideRepo", "📄 Markdown:\n$it")
+                }
         } catch (e: Exception) {
             Log.e("TravelGuideRepo", "❌ Error ChatGPT: ${e.message}", e)
             throw e
         }
+
+        // Post-procesado: envolver números de teléfono en enlaces tel:
+        val linkedMarkdown = markdown.replace(
+            // Busca líneas que empiecen con "- Teléfono:" seguido de dígitos, espacios o signos '+'
+            Regex("""(?m)^(\s*-\s*Teléfono:\s*)([+\d\s-]+)$""")
+        ) { match ->
+            val label    = match.groupValues[1]          // "- Teléfono: "
+            val rawNum   = match.groupValues[2]          // "123 456 789"
+            val digits   = rawNum.filter { it.isDigit() || it == '+' }
+            // Ejemplo: "- Teléfono: [123 456 789](tel:123456789)"
+            "$label[${rawNum.trim()}](tel:$digits)"
+        }
+
+        return linkedMarkdown
     }
 }

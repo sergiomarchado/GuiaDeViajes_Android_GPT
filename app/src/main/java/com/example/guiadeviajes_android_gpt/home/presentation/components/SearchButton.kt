@@ -27,7 +27,7 @@ fun SearchButton(
                 modifier = Modifier.size(20.dp)
             )
         } else {
-            Text("Buscar")
+            Text("Búsqueda Inteligente")
         }
     }
 }

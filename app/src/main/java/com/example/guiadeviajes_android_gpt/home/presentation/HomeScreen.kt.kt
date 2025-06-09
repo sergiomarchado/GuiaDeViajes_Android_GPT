@@ -37,18 +37,21 @@ fun HomeScreen(
     val selectedCountryState = remember { mutableStateOf("España") }
     val cityQueryState       = remember { mutableStateOf(TextFieldValue("")) }
 
-    // Estados para cada checkbox de interés
-    var museumsChecked     by remember { mutableStateOf(false) }
-    var restaurantsChecked by remember { mutableStateOf(false) }
-    var landmarksChecked   by remember { mutableStateOf(false) }
-    var parksChecked       by remember { mutableStateOf(false) }
-    var beachesChecked     by remember { mutableStateOf(false) }
-    var hotelsChecked      by remember { mutableStateOf(false) }
-    var pipicanChecked     by remember { mutableStateOf(false) }
-    var walkingZonesChecked by remember { mutableStateOf(false) }
-    var vetsChecked        by remember { mutableStateOf(false) }
-    var dogResortsChecked  by remember { mutableStateOf(false) }
-    var groomersChecked    by remember { mutableStateOf(false) }
+    // Estados para cada interés
+    var museumsChecked       by remember { mutableStateOf(false) }
+    var restaurantsChecked   by remember { mutableStateOf(false) }
+    var landmarksChecked     by remember { mutableStateOf(false) }
+    var parksChecked         by remember { mutableStateOf(false) }
+    var beachesChecked       by remember { mutableStateOf(false) }
+    var hotelsChecked        by remember { mutableStateOf(false) }
+    var campingsChecked      by remember { mutableStateOf(false) }
+    var pipicanChecked       by remember { mutableStateOf(false) }
+    var walkingZonesChecked  by remember { mutableStateOf(false) }
+    var vetsChecked          by remember { mutableStateOf(false) }
+    var hospitalsChecked     by remember { mutableStateOf(false) }
+    var dogResortsChecked    by remember { mutableStateOf(false) }
+    var groomersChecked      by remember { mutableStateOf(false) }
+    var petStoresChecked     by remember { mutableStateOf(false) }
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -86,7 +89,7 @@ fun HomeScreen(
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
                 Text(
-                    text     = "Completa los campos y selecciona uno o varios intereses desplazándote lateralmente.",
+                    text     = "Completa los campos y selecciona un interés para realizar una búsqueda inteligente con IA.\n(Puedes desplazarte lateralmente)",
                     fontSize = 16.sp,
                     modifier = Modifier.padding(bottom = 16.dp)
                 )
@@ -100,28 +103,36 @@ fun HomeScreen(
 
                 // Intereses
                 InterestsSection(
-                    museumsChecked = museumsChecked,
-                    onMuseumsCheckedChange = { museumsChecked = it },
-                    restaurantsChecked = restaurantsChecked,
+                    museumsChecked             = museumsChecked,
+                    onMuseumsCheckedChange     = { museumsChecked = it },
+                    restaurantsChecked         = restaurantsChecked,
                     onRestaurantsCheckedChange = { restaurantsChecked = it },
-                    landmarksChecked = landmarksChecked,
-                    onLandmarksCheckedChange = { landmarksChecked = it },
-                    parksChecked = parksChecked,
-                    onParksCheckedChange = { parksChecked = it },
-                    beachesChecked = beachesChecked,
-                    onBeachesCheckedChange = { beachesChecked = it },
-                    hotelsChecked = hotelsChecked,
-                    onHotelsCheckedChange = { hotelsChecked = it },
-                    pipicanChecked = pipicanChecked,
-                    onPipicanCheckedChange = { pipicanChecked = it },
-                    walkingZonesChecked = walkingZonesChecked,
-                    onWalkingZonesCheckedChange = { walkingZonesChecked = it },
-                    vetsChecked = vetsChecked,
-                    onVetsCheckedChange = { vetsChecked = it },
-                    dogResortsChecked = dogResortsChecked,
-                    onDogResortsCheckedChange = { dogResortsChecked = it },
-                    groomersChecked = groomersChecked,
-                    onGroomersCheckedChange = { groomersChecked = it }
+                    landmarksChecked           = landmarksChecked,
+                    onLandmarksCheckedChange   = { landmarksChecked = it },
+
+                    parksChecked               = parksChecked,
+                    onParksCheckedChange       = { parksChecked = it },
+                    beachesChecked             = beachesChecked,
+                    onBeachesCheckedChange     = { beachesChecked = it },
+                    hotelsChecked              = hotelsChecked,
+                    onHotelsCheckedChange      = { hotelsChecked = it },
+                    campingsChecked            = campingsChecked,
+                    onCampingsCheckedChange    = { campingsChecked = it },
+                    pipicanChecked             = pipicanChecked,
+                    onPipicanCheckedChange     = { pipicanChecked = it },
+                    walkingZonesChecked        = walkingZonesChecked,
+                    onWalkingZonesCheckedChange= { walkingZonesChecked = it },
+
+                    vetsChecked                = vetsChecked,
+                    onVetsCheckedChange        = { vetsChecked = it },
+                    hospitalsChecked           = hospitalsChecked,
+                    onHospitalsCheckedChange   = { hospitalsChecked = it },
+                    groomersChecked            = groomersChecked,
+                    onGroomersCheckedChange    = { groomersChecked = it },
+                    dogResortsChecked          = dogResortsChecked,
+                    onDogResortsCheckedChange  = { dogResortsChecked = it },
+                    petStoresChecked           = petStoresChecked,
+                    onPetStoresCheckedChange   = { petStoresChecked = it }
                 )
                 Spacer(modifier = Modifier.height(16.dp))
 
@@ -141,13 +152,17 @@ fun HomeScreen(
                                 if (parksChecked)       add("parques naturales")
                                 if (beachesChecked)     add("playas perros")
                                 if (hotelsChecked)      add("hoteles admite mascotas")
+                                if (campingsChecked)    add("campings pet friendly")
                                 if (pipicanChecked)     add("pipican")
-                                if (walkingZonesChecked) add("zonas paseo")
-                                if (vetsChecked)        add("veterinarios y hospitales veterinarios 24h")
+                                if (walkingZonesChecked)add("zonas paseo")
+                                if (vetsChecked)        add("veterinarios")
+                                if (hospitalsChecked)   add("hospitales veterinarios 24h")
                                 if (dogResortsChecked)  add("residencias caninas")
                                 if (groomersChecked)    add("peluquerías caninas")
+                                if (petStoresChecked)   add("tiendas de piensos")
                             }
-                            val interesesRaw = interesesLista.joinToString(", ")
+                            val interesesRaw = interesesLista
+                                .joinToString(", ")
                                 .ifBlank { "lugares pet friendly" }
 
                             // Codificamos y navegamos
@@ -159,19 +174,22 @@ fun HomeScreen(
                             }
 
                             // Limpiamos formulario
-                            cityQueryState.value = TextFieldValue("")
-                            selectedCountryState.value = "España"
-                            museumsChecked = false
-                            restaurantsChecked = false
-                            landmarksChecked = false
-                            parksChecked = false
-                            beachesChecked = false
-                            hotelsChecked = false
-                            pipicanChecked = false
-                            walkingZonesChecked = false
-                            vetsChecked = false
-                            dogResortsChecked = false
-                            groomersChecked = false
+                            cityQueryState.value      = TextFieldValue("")
+                            selectedCountryState.value= "España"
+                            museumsChecked            = false
+                            restaurantsChecked        = false
+                            landmarksChecked          = false
+                            parksChecked              = false
+                            beachesChecked            = false
+                            hotelsChecked             = false
+                            campingsChecked           = false
+                            pipicanChecked            = false
+                            walkingZonesChecked       = false
+                            vetsChecked               = false
+                            hospitalsChecked          = false
+                            dogResortsChecked         = false
+                            groomersChecked           = false
+                            petStoresChecked          = false
                         } else {
                             Log.w("HOME_SCREEN", "Ciudad vacía: sin búsqueda")
                         }
