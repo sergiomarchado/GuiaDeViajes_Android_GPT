@@ -19,7 +19,17 @@ import androidx.navigation.NavController
 import com.example.guiadeviajes_android_gpt.home.presentation.components.HomeTopAppBar
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-
+/**
+ * SavedResultsListScreen.kt
+ *
+ * Pantalla que muestra la lista de consultas guardadas por el usuario.
+ * Permite navegar al detalle de cada consulta y eliminar resultados.
+ *
+ * @param navController Controlador de navegación para moverse entre pantallas.
+ * @param drawerState   Estado del Drawer para abrir el menú lateral.
+ * @param scope         Alcance de corutinas para abrir/cerrar el Drawer.
+ * @param viewModel     ViewModel que expone los resultados guardados y eventos de eliminación.
+ */
 @Composable
 fun SavedResultsListScreen(
     navController: NavController,
@@ -27,11 +37,13 @@ fun SavedResultsListScreen(
     scope: CoroutineScope,
     viewModel: SavedResultsViewModel = hiltViewModel()
 ) {
+    // 1) Obtener lista de resultados y flujo de eventos de borrado
     val items        by viewModel.savedResults.collectAsState()
     val deleteEvents = viewModel.deleteStatus
+    // Snackbar para mostrar feedback de eliminación
     val snackbarHost = remember { SnackbarHostState() }
 
-    // Escuchar eventos de borrado para mostrar snackbar
+    // 2) Escuchar eventos de borrado y mostrar mensaje
     LaunchedEffect(deleteEvents) {
         deleteEvents.collect { evt ->
             val message = when (evt) {
@@ -43,17 +55,21 @@ fun SavedResultsListScreen(
         }
     }
 
+    // 3) Estructura principal UI
     Scaffold(
         topBar = {
             HomeTopAppBar(
+                // Título
                 userName   = "Mis consultas",
-                userTokens = items.size,  // mostramos el número de consultas como "tokens"
+                // Mostrar contador de consultas
+                userTokens = items.size,
                 onMenuClick = { scope.launch { drawerState.open() } }
             )
         },
         snackbarHost = { SnackbarHost(hostState = snackbarHost) },
         containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
+        // 4) Mostrar mensaje cuando no hay items
         if (items.isEmpty()) {
             Box(
                 Modifier
@@ -64,6 +80,7 @@ fun SavedResultsListScreen(
                 Text("No tienes consultas guardadas", fontSize = 16.sp)
             }
         } else {
+            // 5) Lista de consultas con LazyColumn
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
@@ -72,6 +89,7 @@ fun SavedResultsListScreen(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 items(items, key = { it.id }) { item ->
+                    // 6) Tarjeta clicable para navegar a detalle
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -84,6 +102,7 @@ fun SavedResultsListScreen(
                             containerColor = MaterialTheme.colorScheme.surfaceVariant
                         )
                     ) {
+                        // 7) Contenido de la tarjeta: ciudad, país e intereses + botón eliminar
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier
@@ -102,6 +121,7 @@ fun SavedResultsListScreen(
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
+                            // 8) Icono para eliminar la consulta
                             IconButton(
                                 onClick = { viewModel.deleteResult(item.id) },
                                 modifier = Modifier.size(36.dp)

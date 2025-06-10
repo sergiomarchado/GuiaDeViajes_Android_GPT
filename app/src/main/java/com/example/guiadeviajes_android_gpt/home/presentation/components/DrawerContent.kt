@@ -1,5 +1,11 @@
 package com.example.guiadeviajes_android_gpt.home.presentation.components
-
+/**
+ * DrawerContent.kt
+ *
+ * Contenido del Drawer lateral de la pantalla Home.
+ * Incluye navegación a Inicio, Resultados guardados, Compra de tokens,
+ * edición de perfil y cierre de sesión.
+ */
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
@@ -31,10 +37,12 @@ fun DrawerContent(
     drawerState: DrawerState,
     viewModel: HomeViewModel
 ) {
+    // Hoja modal del Drawer con colores corporativos
     ModalDrawerSheet(
-        drawerContainerColor = Color(0xFF011A30),
-        drawerContentColor   = Color.White
+        drawerContainerColor = Color(0xFF011A30),  // Fondo oscuro
+        drawerContentColor   = Color.White              // Texto e iconos en blanco
     ) {
+        // Título del menú
         Text(
             "Menú",
             modifier   = Modifier.padding(16.dp),
@@ -43,7 +51,7 @@ fun DrawerContent(
             fontWeight = FontWeight.Bold
         )
 
-        // Inicio
+        // Elemento de navegación: Inicio
         NavigationDrawerItem(
             label    = { Text("Inicio", color = Color.White) },
             selected = false,
@@ -58,7 +66,7 @@ fun DrawerContent(
             icon     = { Icon(Icons.Default.Home, contentDescription = null, tint = Color.White) }
         )
 
-        // Resultados guardados
+        // Elemento: Resultados guardados
         NavigationDrawerItem(
             label    = { Text("Resultados de consultas guardadas", color = Color.White) },
             selected = false,
@@ -71,7 +79,7 @@ fun DrawerContent(
             icon     = { Icon(Icons.Default.Bookmark, contentDescription = null, tint = Color.White) }
         )
 
-        // Comprar tokens
+        // Elemento: Comprar tokens
         NavigationDrawerItem(
             label    = { Text("Comprar tokens", color = Color.White) },
             selected = false,
@@ -84,7 +92,7 @@ fun DrawerContent(
             icon     = { Icon(Icons.Default.ShoppingCart, contentDescription = null, tint = Color.White) }
         )
 
-        // Editar perfil
+        // Elemento: Editar perfil
         NavigationDrawerItem(
             label    = { Text("Editar perfil", color = Color.White) },
             selected = false,
@@ -97,13 +105,14 @@ fun DrawerContent(
             icon     = { Icon(Icons.Default.Person, contentDescription = null, tint = Color.White) }
         )
 
-        // Cerrar sesión
+        // Elemento: Cerrar sesión
         NavigationDrawerItem(
             label    = { Text("Cerrar sesión", color = Color.White) },
             selected = false,
             onClick  = {
                 scope.launch {
                     drawerState.close()
+                    // Invoca logout en ViewModel y navega a Login (limpiando Home)
                     viewModel.logout()
                     navController.navigate("login") {
                         popUpTo("home") { inclusive = true }

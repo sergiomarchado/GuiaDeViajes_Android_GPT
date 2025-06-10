@@ -18,7 +18,19 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.guiadeviajes_android_gpt.home.presentation.components.MarkdownWebView
-
+/**
+ * ResultScreen.kt
+ *
+ * Pantalla que muestra los resultados de la búsqueda formateados en Markdown.
+ * Se encarga de lanzar la búsqueda al entrar, mostrar loading, errores,
+ * renderizar el contenido con MarkdownWebView y permitir guardar resultados.
+ *
+ * @param navController Controlador de navegación para volver atrás.
+ * @param city          Ciudad consultada.
+ * @param country       País consultado.
+ * @param interests     Cadena con los intereses usados en la búsqueda.
+ * @param viewModel     ViewModel que orquesta la búsqueda, formateo y guardado.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ResultScreen(
@@ -28,18 +40,23 @@ fun ResultScreen(
     interests: String,
     viewModel: ResultViewModel = hiltViewModel()
 ) {
+    // Contexto para mostrar Toasts
     val context          = LocalContext.current
+
+    // Observables del ViewModel
     val isLoading        by viewModel.isLoading.collectAsState()
     val markdownText     by viewModel.markdownResults.collectAsState()
     val errorMessage     by viewModel.errorMessage.collectAsState()
     val saveEvents       = viewModel.saveStatus
     val snackbarHostState= remember { SnackbarHostState() }
 
+    // Lanzar búsqueda cuando cambien los parámetros de búsqueda
     LaunchedEffect(city, country, interests) {
         Log.d("RESULT_SCREEN", "🔍 Búsqueda para ciudad=$city, país=$country, intereses=$interests")
         viewModel.searchPlacesAndFormatMarkdown(interests, city, country)
     }
 
+    // Mostrar errores en Snackbar
     LaunchedEffect(errorMessage) {
         errorMessage?.let { msg ->
             snackbarHostState.showSnackbar(msg)
@@ -47,6 +64,7 @@ fun ResultScreen(
         }
     }
 
+    // Procesar eventos de guardado: éxito, error o no autenticado
     LaunchedEffect(saveEvents) {
         saveEvents.collect { event ->
             when (event) {
@@ -66,6 +84,7 @@ fun ResultScreen(
         }
     }
 
+    // Estructura de UI
     Scaffold(
         topBar = {
             TopAppBar(
@@ -95,7 +114,7 @@ fun ResultScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.Top
         ) {
-            // Encabezado principal
+            // Encabezado con título y advertencia
             Text(
                 text       = "Resultados en $city, $country",
                 fontSize   = 20.sp,
@@ -112,6 +131,7 @@ fun ResultScreen(
             )
 
             when {
+                // Mostrar indicador de carga
                 isLoading -> {
                     Box(
                         modifier         = Modifier.fillMaxSize(),
@@ -119,7 +139,7 @@ fun ResultScreen(
                     ) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text(
-                                text      = "Buscando…\nUn momento, por favor.",
+                                text      = "Estamos trabajando en ofrecerte el mejor resultado…\nUn momento, por favor.",
                                 fontSize  = 16.sp,
                                 color     = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
                                 textAlign = TextAlign.Center,
@@ -130,11 +150,13 @@ fun ResultScreen(
                     }
                 }
 
+                // Mostrar Markdown cuando esté disponible
                 markdownText.isNotBlank() -> {
                     Box(modifier = Modifier.weight(1f)) {
                         MarkdownWebView(markdown = markdownText)
                     }
                     Spacer(modifier = Modifier.height(16.dp))
+                    //Botón para guardar resultados en RDB
                     Button(
                         onClick = {
                             viewModel.saveResults(city, country, interests, markdownText)
@@ -147,6 +169,7 @@ fun ResultScreen(
                     }
                 }
 
+                // Mostrar texto de no resultados
                 else -> {
                     Text(
                         text      = "No se encontraron resultados para tu búsqueda.",

@@ -1,5 +1,10 @@
 package com.example.guiadeviajes_android_gpt.auth.presentation
-
+/**
+ * LoginScreen.kt
+ *
+ * Pantalla de acceso de usuario (login) con animaciones de borde en campos de email y contraseña.
+ * Gestiona estados de UI, validación de credenciales y navegación al iniciar sesión.
+ */
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
@@ -25,18 +30,22 @@ fun LoginScreen(
     navController: NavController,
     viewModel: AuthViewModel = hiltViewModel()
 ) {
+    // Estados locales para email y contraseña
     val emailState = remember { mutableStateOf("") }
     val passwordState = remember { mutableStateOf("") }
+
+    // Observables del ViewModel: carga y mensajes de error
     val isLoading by viewModel.isLoading.collectAsState()
     val errorMessage by viewModel.errorMessage.collectAsState()
 
+    // Snackbar para mostrar errores
     val snackbarHostState = remember { SnackbarHostState() }
 
-    // 🔹 Estados de foco
+    // Estados de foco para animar los bordes de los TextFields
     var emailFocused by remember { mutableStateOf(false) }
     var passwordFocused by remember { mutableStateOf(false) }
 
-    // 🔹 Animación infinita para borde "idle breathing"
+    // Animación "idle breathing": borde pulsante en estado normal
     val idleTransition = rememberInfiniteTransition()
     val idleAlpha by idleTransition.animateFloat(
         initialValue = 0.5f,
@@ -48,7 +57,7 @@ fun LoginScreen(
     )
     val idleBorderColor = Color(0xFFB0BEC5).copy(alpha = idleAlpha)
 
-    // 🔹 Animación infinita para borde "focused breathing"
+    // Animación "focused breathing": borde pulsante más rápido en foco
     val focusedTransition = rememberInfiniteTransition()
     val focusedAlpha by focusedTransition.animateFloat(
         initialValue = 0.5f,
@@ -60,9 +69,11 @@ fun LoginScreen(
     )
     val focusedBorderColor = Color.Cyan.copy(alpha = focusedAlpha)
 
+    // Selección de color de borde según foco
     val emailBorderColor = if (emailFocused) focusedBorderColor else idleBorderColor
     val passwordBorderColor = if (passwordFocused) focusedBorderColor else idleBorderColor
 
+    // Efecto para mostrar Snackbar al cambiar errorMessage
     LaunchedEffect(errorMessage) {
         errorMessage?.let { message ->
             snackbarHostState.showSnackbar(message)
@@ -70,9 +81,10 @@ fun LoginScreen(
         }
     }
 
+    // Estructura principal UI
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
-        containerColor = Color(0xFF011A30)
+        containerColor = Color(0xFF011A30) // Fondo de la app
     ) { padding ->
         Box(
             modifier = Modifier
@@ -86,6 +98,8 @@ fun LoginScreen(
                     .padding(horizontal = 32.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+
+                // Logo de la app
                 Image(
                     painter = painterResource(id = R.drawable.icono_fav),
                     contentDescription = "Logo de la app",
@@ -95,6 +109,7 @@ fun LoginScreen(
                     contentScale = ContentScale.Fit
                 )
 
+                // Títulos de bienvenida
                 Text(
                     text = "Bienvenid@ a",
                     fontSize = 20.sp,
@@ -109,6 +124,7 @@ fun LoginScreen(
                     modifier = Modifier.padding(bottom = 16.dp)
                 )
 
+                // Campo de email con animación y etiqueta flotante
                 AnimatedLabelTextField(
                     value = emailState.value,
                     onValueChange = { emailState.value = it },
@@ -121,6 +137,7 @@ fun LoginScreen(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
+                // Campo de contraseña con transformación y acción Done
                 AnimatedLabelTextField(
                     value = passwordState.value,
                     onValueChange = { passwordState.value = it },
@@ -131,6 +148,7 @@ fun LoginScreen(
                     imeAction = ImeAction.Done,
                     isPassword = true,
                     onDone = {
+                        // Invoca login al pulsar Done
                         viewModel.loginUser(
                             emailState.value.trim(),
                             passwordState.value.trim(),
@@ -145,6 +163,7 @@ fun LoginScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
+                // Botón de iniciar sesión
                 Button(
                     onClick = {
                         viewModel.loginUser(
@@ -169,6 +188,7 @@ fun LoginScreen(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
+                // Enlaces a registro y recuperación de contraseña
                 TextButton(onClick = { navController.navigate("register") }) {
                     Text("¿No tienes cuenta? Regístrate aquí", color = Color.White)
                 }
@@ -176,6 +196,7 @@ fun LoginScreen(
                     Text("¿Olvidaste tu contraseña?", color = Color.White)
                 }
 
+                // Indicador de carga mientras procesa login
                 if (isLoading) {
                     Spacer(modifier = Modifier.height(16.dp))
                     CircularProgressIndicator(color = Color.White)

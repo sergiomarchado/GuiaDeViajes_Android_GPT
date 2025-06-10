@@ -1,5 +1,11 @@
 package com.example.guiadeviajes_android_gpt.home.presentation.components
-
+/**
+ * TravelInfoCard.kt
+ *
+ * Composable que muestra información de viaje formateada en Markdown.
+ * Convierte el Markdown a HTML, lo renderiza en un TextView dentro de un Card,
+ * habilitando enlaces clicables.
+ */
 import android.text.Html
 import android.text.method.LinkMovementMethod
 import android.widget.TextView
@@ -18,13 +24,18 @@ import org.commonmark.renderer.html.HtmlRenderer
 fun TravelInfoCard(
     travelInfo: String
 ) {
+    // 1) Parsear Markdown a AST
     val parser = Parser.builder().build()
     val document = parser.parse(travelInfo)
+
+    // 2) Renderizar AST a HTML
     val renderer = HtmlRenderer.builder().build()
     val htmlContent = renderer.render(document)
 
+    // Obtener color de texto desde el tema Material3
     val textColorInt = MaterialTheme.colorScheme.onBackground.toArgb()
 
+    // Card que envuelve el contenido HTML
     Card(
         shape = MaterialTheme.shapes.medium,
         elevation = CardDefaults.cardElevation(4.dp),
@@ -33,13 +44,17 @@ fun TravelInfoCard(
         ),
         modifier = Modifier.fillMaxWidth()
     ) {
+        // AndroidView para renderizar HTML usando TextView
         AndroidView(
             factory = { context ->
                 TextView(context).apply {
+                    // Asignar HTML al TextView
                     text = Html.fromHtml(htmlContent, Html.FROM_HTML_MODE_LEGACY)
+                    // Color de texto acorde al tema y tamaño
                     setTextColor(textColorInt)
                     textSize = 16f
-                    // 🔗 Habilita que los enlaces sean clicables
+
+                    // Habilitar enlaces clicables en el TextView
                     movementMethod = LinkMovementMethod.getInstance()
                 }
             },

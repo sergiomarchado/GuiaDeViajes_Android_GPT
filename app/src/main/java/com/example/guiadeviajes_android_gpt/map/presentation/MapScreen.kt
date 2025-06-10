@@ -26,7 +26,7 @@ fun MapScreen() {
                 .padding(padding),
             contentAlignment = Alignment.Center
         ) {
-            Text("Aquí irá el Mapa 🗺️")
+            Text("EN CONSTRUCCIÓN...😄👷‍♂️🗺️🌍")
         }
     }
 }

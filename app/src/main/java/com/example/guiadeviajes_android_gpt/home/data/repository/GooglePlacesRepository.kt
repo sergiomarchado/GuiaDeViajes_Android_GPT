@@ -1,5 +1,11 @@
 package com.example.guiadeviajes_android_gpt.home.data.repository
-
+/**
+ * GooglePlacesRepository.kt
+ *
+ * Repositorio que encapsula la lógica de búsqueda de lugares usando la API de Google Places.
+ * Proporciona métodos para Text Search, Find Place, Nearby Search y Geocoding,
+ * devolviendo resultados simplificados en SimplePlaceResult.
+ */
 import android.util.Log
 import com.example.guiadeviajes_android_gpt.BuildConfig
 import com.example.guiadeviajes_android_gpt.home.data.remote.GooglePlacesApi
@@ -10,12 +16,21 @@ class GooglePlacesRepository @Inject constructor(
     private val api: GooglePlacesApi
 ) {
 
+    /**
+     * Realiza una búsqueda de texto (Text Search) en Google Places.
+     *
+     * @param query Términos de búsqueda combinados (intereses, ciudad, país).
+     * @param location Coordenadas para sesgar resultados (opcional).
+     * @param radius Radio en metros para sesgar resultados (opcional).
+     * @return Lista de resultados simplificados.
+     */
     private suspend fun searchPlaces(
         query: String,
         location: String? = null,
         radius: Int? = null
     ): List<SimplePlaceResult> {
         return try {
+            // Llamada a la API de Text Search
             val response = api.searchPlaces(
                 query    = query,
                 apiKey   = BuildConfig.API_KEYG,
@@ -25,6 +40,7 @@ class GooglePlacesRepository @Inject constructor(
             if (response.isSuccessful) {
                 val results = response.body()?.results.orEmpty()
                 Log.d("PLACES_API", "✅ TextSearch lugares: ${results.size}")
+                // Mapear cada resultado a SimplePlaceResult
                 results.map { place ->
                     SimplePlaceResult(
                         placeId     = place.place_id,
@@ -36,15 +52,24 @@ class GooglePlacesRepository @Inject constructor(
                     )
                 }
             } else {
+                // Log de error de respuesta HTTP
                 Log.e("PLACES_API", "❌ Error TextSearch: ${response.errorBody()?.string()}")
                 emptyList()
             }
         } catch (e: Exception) {
+            // Captura de excepciones de red o parseo
             Log.e("PLACES_API", "❌ Excepción TextSearch: ${e.message}", e)
             emptyList()
         }
     }
 
+    /**
+     * Realiza una búsqueda de tipo Find Place From Text.
+     * Obtiene candidatos y luego busca detalles de cada uno.
+     *
+     * @param query Términos de búsqueda.
+     * @return Lista de resultados con detalles.
+     */
     private suspend fun findPlaceByText(query: String): List<SimplePlaceResult> {
         return try {
             val resp = api.findPlaceFromText(
@@ -54,6 +79,7 @@ class GooglePlacesRepository @Inject constructor(
             if (resp.isSuccessful) {
                 val candidates = resp.body()?.candidates.orEmpty()
                 Log.d("PLACES_API", "🔍 FindPlace candidates: ${candidates.size}")
+                // Mapear candidatos a detalles de lugar
                 candidates.mapNotNull { cand ->
                     cand.place_id?.let { id ->
                         getPlaceDetails(id)
@@ -69,6 +95,12 @@ class GooglePlacesRepository @Inject constructor(
         }
     }
 
+    /**
+     * Obtiene detalles de un lugar dado su placeId.
+     *
+     * @param placeId ID del lugar en Google Places.
+     * @return Resultado simplificado o null en caso de error.
+     */
     suspend fun getPlaceDetails(placeId: String): SimplePlaceResult? {
         return try {
             val response = api.getPlaceDetails(
@@ -96,6 +128,16 @@ class GooglePlacesRepository @Inject constructor(
         }
     }
 
+    /**
+     * Realiza una búsqueda Nearby Search sesgada por tipo y palabra clave.
+     *
+     * @param lat Latitud de la ubicación.
+     * @param lng Longitud de la ubicación.
+     * @param radius Radio de búsqueda en metros.
+     * @param type Tipo de lugar (e.g., "restaurant").
+     * @param keyword Palabra clave para filtrar resultados (opcional).
+     * @return Lista de resultados simplificados.
+     */
     private suspend fun searchNearby(
         lat: Double,
         lng: Double,
@@ -135,6 +177,12 @@ class GooglePlacesRepository @Inject constructor(
         }
     }
 
+    /**
+     * Convierte una dirección en coordenadas lat/lng usando Geocoding API.
+     *
+     * @param address Dirección completa.
+     * @return Par de coordenadas (lat, lng) o null si no se encontró.
+     */
     private suspend fun geocodeAddress(address: String): Pair<Double, Double>? {
         return try {
             val response = api.geocode(address, BuildConfig.API_KEYG)
@@ -155,6 +203,21 @@ class GooglePlacesRepository @Inject constructor(
         }
     }
 
+    /**
+     * Búsqueda inteligente que combina varios métodos para obtener hasta maxResults lugares.
+     *
+     * 1) Find Place From Text
+     * 2) Text Search
+     * 3) Nearby Search con sesgo de ubicación según intereses
+     * 4) Búsqueda de fallback lingüístico
+     * 5) Desduplicar y limitar resultados
+     *
+     * @param interests Intereses seleccionados (% pet friendly).
+     * @param city Nombre de la ciudad.
+     * @param country Nombre del país.
+     * @param maxResults Límite de resultados a devolver.
+     * @return Lista de resultados únicos.
+     */
     suspend fun smartSearch(
         interests: String,
         city: String,
@@ -164,15 +227,16 @@ class GooglePlacesRepository @Inject constructor(
         val collected = mutableListOf<SimplePlaceResult>()
         val rawQuery = "$interests $city $country"
 
-        // 1) Find Place rápido
+        // 1) Quick Find Place
         collected += findPlaceByText(rawQuery)
 
-        // 2) Text Search básico
+        // 2) Basic Text Search
         collected += searchPlaces(rawQuery)
 
-        // 3) Sesgo de ubicación + Nearby según interés
+        // 3) Sesgo de ubicación: si faltan resultados, geocodificar y hacer Nearby
         if (collected.size < maxResults) {
             geocodeAddress("$city, $country")?.let { (lat, lng) ->
+                // Seleccionar Nearby según contenido de intereses
                 when {
                     interests.contains("restaurantes", ignoreCase = true) ->
                         collected += searchNearby(lat, lng, type = "restaurant", keyword = "pet")
@@ -195,12 +259,12 @@ class GooglePlacesRepository @Inject constructor(
                     interests.contains("tiendas de piensos", ignoreCase = true) ->
                         collected += searchNearby(lat, lng, type = "pet_store", keyword = "food")
                 }
-                // y bias en TextSearch
+                // Añadir Text Search con ubicación y radio reducido
                 collected += searchPlaces(rawQuery, location = "$lat,$lng", radius = 10_000)
             }
         }
 
-        // 4) Último fallback lingüístico
+        // 4) Fallback lingüístico si aún faltan resultados
         if (collected.size < maxResults) {
             val fallback = when {
                 interests.contains("campings", ignoreCase = true) ->
@@ -213,7 +277,7 @@ class GooglePlacesRepository @Inject constructor(
             collected += searchPlaces(fallback)
         }
 
-        // 5) Desduplicar y limitar
+        // 5) Desduplicar por placeId y limitar al tamaño máximo
         return collected
             .distinctBy { it.placeId }
             .take(maxResults)

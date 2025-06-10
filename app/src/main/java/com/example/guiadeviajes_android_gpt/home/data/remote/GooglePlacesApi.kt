@@ -1,10 +1,15 @@
-// GooglePlacesApi.kt
 package com.example.guiadeviajes_android_gpt.home.data.remote
-
-import com.example.guiadeviajes_android_gpt.home.data.remote.dto.GeocodingResponse
-import com.example.guiadeviajes_android_gpt.home.data.remote.dto.PlacesSearchResponse
-import com.example.guiadeviajes_android_gpt.home.data.remote.dto.PlaceDetailsResponse
-import com.example.guiadeviajes_android_gpt.home.data.remote.dto.FindPlaceResponse
+/**
+ * GooglePlacesApi.kt
+ *
+ * Interfaz Retrofit para consumir la API de Google Places y Geocoding.
+ * Proporciona endpoints para Text Search, Place Details, Nearby Search,
+ * Geocoding y Find Place from Text.
+ */
+import com.example.guiadeviajes_android_gpt.home.data.remote.dto.response.GeocodingResponse
+import com.example.guiadeviajes_android_gpt.home.data.remote.dto.response.PlacesSearchResponse
+import com.example.guiadeviajes_android_gpt.home.data.remote.dto.response.PlaceDetailsResponse
+import com.example.guiadeviajes_android_gpt.home.data.remote.dto.response.FindPlaceResponse
 import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Query
@@ -12,7 +17,13 @@ import retrofit2.http.Query
 interface GooglePlacesApi {
 
     /**
-     * Text Search con sesgo de ubicación opcional.
+     * Text Search en Google Places.
+     *
+     * @param query Términos de búsqueda, e.g., "pet friendly restaurants".
+     * @param apiKey Clave de API de Google Places.
+     * @param location Coordenadas opcionales "lat,lng" para sesgar resultados.
+     * @param radius Radio opcional en metros para filtrar proximidad.
+     * @return Response con PlacesSearchResponse que contiene lista de lugares.
      */
     @GET("place/textsearch/json")
     suspend fun searchPlaces(
@@ -23,7 +34,12 @@ interface GooglePlacesApi {
     ): Response<PlacesSearchResponse>
 
     /**
-     * Place Details para obtener datos adicionales.
+     * Obtiene detalles de un lugar específico.
+     *
+     * @param placeId ID único del lugar.
+     * @param apiKey  Clave de API de Google Places.
+     * @param fields  Campos a incluir en la respuesta (por defecto: name, address, website, phone, rating).
+     * @return Response con PlaceDetailsResponse que incluye información detallada.
      */
     @GET("place/details/json")
     suspend fun getPlaceDetails(
@@ -33,7 +49,14 @@ interface GooglePlacesApi {
     ): Response<PlaceDetailsResponse>
 
     /**
-     * Nearby Search genérico para cualquier tipo y keyword.
+     * Búsqueda Nearby Search en Google Places.
+     *
+     * @param location Coordenadas "lat,lng" del centro de búsqueda.
+     * @param radius   Radio en metros para la búsqueda.
+     * @param type     Tipo de lugar (e.g., "restaurant", "park").
+     * @param keyword  Palabra clave adicional para filtrar resultados.
+     * @param apiKey   Clave de API de Google Places.
+     * @return Response con PlacesSearchResponse que contiene lista de lugares.
      */
     @GET("place/nearbysearch/json")
     suspend fun nearbySearch(
@@ -45,7 +68,11 @@ interface GooglePlacesApi {
     ): Response<PlacesSearchResponse>
 
     /**
-     * Geocoding para convertir dirección en coordenadas.
+     * Geocoding: convierte una dirección en coordenadas.
+     *
+     * @param address Dirección completa para geocodificar.
+     * @param apiKey   Clave de API de Google Maps Geocoding.
+     * @return Response con GeocodingResponse que contiene resultados y coordenadas.
      */
     @GET("geocode/json")
     suspend fun geocode(
@@ -54,7 +81,13 @@ interface GooglePlacesApi {
     ): Response<GeocodingResponse>
 
     /**
-     * Find Place from Text como fallback adicional.
+     * Find Place From Text: búsqueda de lugar por texto.
+     *
+     * @param input     Texto de búsqueda (input text query).
+     * @param inputType Tipo de entrada (por defecto "textquery").
+     * @param fields    Campos a incluir en la respuesta (por defecto "place_id").
+     * @param apiKey    Clave de API de Google Places.
+     * @return Response con FindPlaceResponse que contiene candidatos.
      */
     @GET("place/findplacefromtext/json")
     suspend fun findPlaceFromText(

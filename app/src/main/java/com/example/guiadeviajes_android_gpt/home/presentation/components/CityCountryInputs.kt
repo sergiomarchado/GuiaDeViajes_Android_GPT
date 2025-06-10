@@ -1,5 +1,10 @@
 package com.example.guiadeviajes_android_gpt.home.presentation.components
-
+/**
+ * CityCountryInputs.kt
+ *
+ * Composable que muestra dos campos de texto para seleccionar el país
+ * y especificar la ciudad en la pantalla Home.
+ */
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.LocationOn
@@ -15,13 +20,17 @@ fun CityCountryInputs(
     selectedCountry: MutableState<String>,
     cityQuery: MutableState<TextFieldValue>
 ) {
+    // Contenedor vertical que ocupa el ancho
     Column(
         modifier = Modifier.fillMaxWidth()
     ) {
-        // Campo para el país (permite editar la cadena directamente)
+        // 1) Campo de texto para el país
         OutlinedTextField(
             value = selectedCountry.value,
-            onValueChange = { selectedCountry.value = it },
+            onValueChange = {
+                // Actualiza el estado del país cuando el usuario edita
+                selectedCountry.value = it
+            },
             label = {
                 Text(
                     "País",
@@ -29,6 +38,7 @@ fun CityCountryInputs(
                 )
             },
             leadingIcon = {
+                // Icono de localización para indicar selección de ubicación
                 Icon(
                     Icons.Default.LocationOn,
                     contentDescription = null,
@@ -40,7 +50,9 @@ fun CityCountryInputs(
                 color = MaterialTheme.colorScheme.onBackground
             ),
             colors = OutlinedTextFieldDefaults.colors(
+                // Borde primario al enfocar
                 focusedBorderColor = MaterialTheme.colorScheme.primary,
+                // Borde tenue cuando no está enfocado
                 unfocusedBorderColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
                 cursorColor = MaterialTheme.colorScheme.primary
             )
@@ -48,10 +60,13 @@ fun CityCountryInputs(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Campo para la ciudad (texto libre)
+        // 2) Campo de texto para la ciudad
         OutlinedTextField(
             value = cityQuery.value,
-            onValueChange = { cityQuery.value = it },
+            onValueChange = {
+                // Actualiza el estado de la ciudad a medida que el usuario escribe
+                cityQuery.value = it
+            },
             label = {
                 Text(
                     "Ciudad",
@@ -59,6 +74,7 @@ fun CityCountryInputs(
                 )
             },
             leadingIcon = {
+                // Mismo icono
                 Icon(
                     Icons.Default.LocationOn,
                     contentDescription = null,

@@ -1,5 +1,11 @@
 package com.example.guiadeviajes_android_gpt.auth.presentation
-
+/**
+ * EmailVerificationScreen.kt
+ *
+ * Pantalla de verificación de correo electrónico.
+ * Permite al usuario verificar su email mediante un botón para refrescar estado y otro para reenviar el correo.
+ * Muestra además estados de carga y mensajes de error en un Snackbar.
+ */
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -19,12 +25,13 @@ fun EmailVerificationScreen(
     navController: NavController,
     viewModel: AuthViewModel = hiltViewModel()
 ) {
+    // Observables del ViewModel
     val isLoading by viewModel.isLoading.collectAsState()
     val errorMessage by viewModel.errorMessage.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
 
-    // Mostrar errores en snackbar
+    // Efecto que muestra un Snackbar cuando cambia errorMessage
     LaunchedEffect(errorMessage) {
         errorMessage?.let { message ->
             snackbarHostState.showSnackbar(message)
@@ -32,9 +39,10 @@ fun EmailVerificationScreen(
         }
     }
 
+    // Estructura principal de UI
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
-        containerColor = Color(0xFF011A30)
+        containerColor = Color(0xFF011A30) // Fondo oscuro
     ) { padding ->
         Box(
             modifier = Modifier
@@ -48,6 +56,7 @@ fun EmailVerificationScreen(
                     .padding(horizontal = 32.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                // Título de la pantalla
                 Text(
                     text = "Verificación de correo",
                     color = Color.White,
@@ -55,6 +64,7 @@ fun EmailVerificationScreen(
                     modifier = Modifier.padding(bottom = 16.dp)
                 )
 
+                // Texto informativo
                 Text(
                     text = "Hemos enviado un correo de verificación. Por favor, revisa tu bandeja de entrada y haz clic en el enlace de verificación.",
                     color = Color.White.copy(alpha = 0.8f),
@@ -64,11 +74,13 @@ fun EmailVerificationScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
+                // Botón para comprobar estado de verificación
                 Button(
                     onClick = {
                         coroutineScope.launch {
                             viewModel.reloadAndCheckEmailVerification { isVerified ->
                                 if (isVerified) {
+                                    // Navega a Home y limpia backStack de verificación
                                     navController.navigate("home") {
                                         popUpTo("email_verification") { inclusive = true }
                                     }
@@ -90,6 +102,7 @@ fun EmailVerificationScreen(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
+                // Botón para reenviar correo de verificación
                 Button(
                     onClick = {
                         viewModel.resendVerificationEmail(
@@ -115,6 +128,7 @@ fun EmailVerificationScreen(
                     Text("Reenviar correo")
                 }
 
+                // Indicador de carga centrado debajo de botones
                 if (isLoading) {
                     Spacer(modifier = Modifier.height(16.dp))
                     CircularProgressIndicator(color = Color.White)

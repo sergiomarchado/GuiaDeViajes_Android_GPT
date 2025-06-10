@@ -1,43 +1,57 @@
 package com.example.guiadeviajes_android_gpt.home.data.repository
-
+/**
+ * TravelGuideRepository.kt
+ *
+ * Repositorio que formatea una lista de lugares de la API de Google Places
+ * y utiliza la API de ChatGPT para convertirla en Markdown con enlaces y formato amigable.
+ * Finalmente post-procesa el Markdown para transformar los números de teléfono en enlaces clicables.
+ */
 import android.util.Log
 import com.example.guiadeviajes_android_gpt.home.data.remote.ChatgptApi
 import com.example.guiadeviajes_android_gpt.home.data.remote.dto.ChatiRequestDto
-import com.example.guiadeviajes_android_gpt.home.data.remote.dto.ChatiResponseDto
+import com.example.guiadeviajes_android_gpt.home.data.remote.dto.response.ChatiResponseDto
 import com.example.guiadeviajes_android_gpt.home.data.remote.dto.Message
 import com.example.guiadeviajes_android_gpt.home.data.remote.dto.SimplePlaceResult
 import javax.inject.Inject
 
-/**
- * Repositorio que formatea una lista de lugares en Markdown,
- * pidiéndole a ChatGPT un formato conciso con los campos esenciales,
- * y post-procesa para hacer clicables los teléfonos.
- */
 class TravelGuideRepository @Inject constructor(
     private val chatGptApi: ChatgptApi
 ) {
 
+    /**
+     * Toma una lista de lugares y un string de intereses, construye un JSON simplificado,
+     * envía una petición a ChatGPT para formatear la lista en Markdown y post-procesa
+     * los números de teléfono para hacerlos clicables.
+     *
+     * @param places Lista de SimplePlaceResult obtenida de Google Places.
+     * @param interests Cadena con los intereses seleccionados por el usuario.
+     * @return Texto en Markdown con formato completo y enlaces tel: para teléfonos.
+     */
     suspend fun formatPlacesWithMarkdown(
         places: List<SimplePlaceResult>,
         interests: String
     ): String {
-        // Limitar a primeros 10 resultados para reducir tokens
+        // 1) Limitar el número de lugares para controlar consumo de tokens
         val MAX_PLACES = 10
         val toSend = places.take(MAX_PLACES)
 
-        // Construir JSON con campos esenciales
+        // 2) Construir un JSON simplificado con los campos esenciales
         val placesJson = buildString {
             append("[\n")
             toSend.forEachIndexed { idx, p ->
                 append("  {\n")
                 append("    \"name\": \"${p.name}\"")
                 append(",\n    \"address\": \"${p.address.orEmpty()}\"")
+
+                // Incluir phoneNumber si existe
                 p.phoneNumber?.takeIf { it.isNotBlank() }?.let {
                     append(",\n    \"phoneNumber\": \"${it}\"")
                 }
+                // Incluir website si existe
                 p.website?.takeIf { it.isNotBlank() }?.let {
                     append(",\n    \"website\": \"${it}\"")
                 }
+                // Incluir rating si existe
                 p.rating?.let {
                     append(",\n    \"rating\": $it")
                 }
@@ -48,7 +62,7 @@ class TravelGuideRepository @Inject constructor(
             append("]")
         }
 
-        // Mensaje system conciso
+        // 3) Definir el mensaje system para guiar a ChatGPT
         val systemMessage = Message(
             role = "system",
             content = """
@@ -67,13 +81,13 @@ class TravelGuideRepository @Inject constructor(
             """.trimIndent()
         )
 
-        // Mensaje user con intereses y JSON
+        // 4) Mensaje user con intereses y JSON de lugares
         val userMessage = Message(
             role = "user",
             content = "Intereses: **$interests**\n\nLugares (máx. $MAX_PLACES):\n```json\n$placesJson\n```"
         )
 
-        // Construir request sin 'stream'
+        // 5) Crear request sin streaming
         val requestBody = ChatiRequestDto(
             model    = "gpt-3.5-turbo",
             messages = listOf(systemMessage, userMessage)
@@ -81,6 +95,7 @@ class TravelGuideRepository @Inject constructor(
 
         Log.d("TravelGuideRepo", "⏳ Enviando ${toSend.size} lugares a ChatGPT")
 
+        // 6) Enviar a ChatGPT y capturar respuesta
         val markdown = try {
             val response: ChatiResponseDto = chatGptApi.getTravelInformation(requestBody)
             response.choices
@@ -97,15 +112,16 @@ class TravelGuideRepository @Inject constructor(
             throw e
         }
 
-        // Post-procesado: envolver números de teléfono en enlaces tel:
+        // 7) Post-procesar Markdown para convertir teléfonos en enlaces tel:
         val linkedMarkdown = markdown.replace(
-            // Busca líneas que empiecen con "- Teléfono:" seguido de dígitos, espacios o signos '+'
+            // Busca líneas que empiecen con "- Teléfono:" seguido de dígitos, espacios o '+'
             Regex("""(?m)^(\s*-\s*Teléfono:\s*)([+\d\s-]+)$""")
         ) { match ->
-            val label    = match.groupValues[1]          // "- Teléfono: "
-            val rawNum   = match.groupValues[2]          // "123 456 789"
+            val label    = match.groupValues[1]          // Porción "- Teléfono: "
+            val rawNum   = match.groupValues[2]          // Porción con el número original
+            // Filtrar solo dígitos y '+'
             val digits   = rawNum.filter { it.isDigit() || it == '+' }
-            // Ejemplo: "- Teléfono: [123 456 789](tel:123456789)"
+            // Construir enlace tel:
             "$label[${rawNum.trim()}](tel:$digits)"
         }
 

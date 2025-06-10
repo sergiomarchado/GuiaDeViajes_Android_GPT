@@ -1,5 +1,11 @@
 package com.example.guiadeviajes_android_gpt.home.presentation.components
-
+/**
+ * MarkdownWebView.kt
+ *
+ * Composable que muestra contenido en formato Markdown dentro de un WebView.
+ * El Markdown se convierte a HTML con estilos CSS modernos y se carga en un WebView
+ * dentro de un Card con bordes redondeados y sombra. Los enlaces se abren externamente.
+ */
 import android.content.Intent
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
@@ -19,19 +25,16 @@ import org.commonmark.parser.Parser
 import org.commonmark.renderer.html.HtmlRenderer
 import androidx.core.net.toUri
 
-/**
- * Muestra un bloque de Markdown en un WebView, dentro de un Card para
- * darle un estilo más moderno (sombra, bordes redondeados, padding).
- */
 @Composable
 fun MarkdownWebView(
     markdown: String
 ) {
-    // Convertimos Markdown a HTML + CSS
+    // 1) Convertir Markdown a HTML con estilos CSS (función helper)
     val htmlContent = convertMarkdownToHtml(markdown)
 
-    // Card envolviendo el WebView para dar sombra y bordes suaves
+    // 2) Mostrar el contenido HTML dentro de un Card para estilo de tarjeta
     Card(
+        // Bordes redondeados y elevación para sombra
         shape = RoundedCornerShape(8.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
         colors = CardDefaults.cardColors(
@@ -42,13 +45,14 @@ fun MarkdownWebView(
             .fillMaxHeight()
             .padding(8.dp)
     ) {
+        // 3) Usamos AndroidView para incrustar un WebView nativo
         AndroidView(
             factory = { context ->
                 WebView(context).apply {
-                    // Desactivamos JavaScript (por seguridad)
+                    // Desactivar JavaScript por seguridad
                     settings.javaScriptEnabled = false
 
-                    // Si el usuario hace clic en un enlace, abrimos el navegador externo
+                    // Manejar clics en enlaces: abrir navegador externo
                     webViewClient = object : WebViewClient() {
                         override fun shouldOverrideUrlLoading(
                             view: WebView?,
@@ -57,11 +61,11 @@ fun MarkdownWebView(
                             val url = request?.url.toString()
                             val intent = Intent(Intent.ACTION_VIEW, url.toUri())
                             context.startActivity(intent)
-                            return true
+                            return true   // No cargar internamente
                         }
                     }
 
-                    // Cargamos el HTML generado (Markdown + CSS)
+                    // Cargar el HTML generado en el WebView
                     loadDataWithBaseURL(
                         /* baseUrl = */ null,
                         /* data     = */ htmlContent,
@@ -79,17 +83,22 @@ fun MarkdownWebView(
 }
 
 /**
- * Convierte la cadena Markdown en HTML, incluyendo un bloque de CSS
- * que le da un aspecto moderno (fondos suaves, tipografías, sombras ligeras).
+ * Convierte una cadena Markdown a un documento HTML completo
+ * incluyendo una hoja de estilos CSS para darle mejor formato.
+ *
+ * @param markdown Texto en formato Markdown.
+ * @return Cadena de HTML lista para cargar en WebView.
  */
 private fun convertMarkdownToHtml(markdown: String): String {
-    // 1) Parseamos Markdown a HTML básico
+    // 1) Parsear Markdown a AST usando CommonMark
     val parser = Parser.builder().build()
     val document = parser.parse(markdown)
+
+    // 2) Renderizar AST a HTML básico
     val renderer = HtmlRenderer.builder().build()
     val htmlBody = renderer.render(document)
 
-    // 2) Definimos un CSS más “moderno”:
+    // 3) Definir estilos CSS: tipografías, colores, márgenes, listados, bloques de código y enlaces
     val css = """
         <style>
             /* -------------------------------------------
@@ -185,7 +194,7 @@ private fun convertMarkdownToHtml(markdown: String): String {
         </style>
     """.trimIndent()
 
-    // 3) Construimos el documento HTML completo
+    // 4) Construir el documento HTML completo con meta viewport
     return """
         <html>
             <head>

@@ -17,7 +17,15 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 
 /**
- * Barra inferior que se extiende bajo la zona de gestos y usa el azul oscuro que le pases.
+ * BottomNavigationBar.kt
+ *
+ * Composable que renderiza la barra de navegación inferior en la app.
+ * Soporta gestos de navegación y utiliza un color de fondo y contenido personalizados.
+ *
+ * @param navController  Controlador de navegación para cambiar rutas.
+ * @param items          Lista de BottomBarScreen que define rutas, etiquetas e iconos.
+ * @param backgroundColor Color de fondo de la barra (por defecto azul oscuro corporativo).
+ * @param contentColor    Color de los iconos y texto (por defecto blanco).
  */
 @Composable
 fun BottomNavigationBar(
@@ -26,19 +34,22 @@ fun BottomNavigationBar(
     backgroundColor: Color = Color(0xFF011A30),
     contentColor: Color = Color.White
 ) {
+    // Obtener la ruta actual del BackStack para marcar el item seleccionado
     val currentRoute = navController.currentBackStackEntryAsState()
         .value
         ?.destination
         ?.route
 
+    // NavigationBar de Material3 con elevación y padding para la zona de gestos
     NavigationBar(
         modifier = Modifier
-            .fillMaxWidth()            // ocupa todo el ancho
-            .navigationBarsPadding(),  // eleva la barra sobre la zona de gestos
+            .fillMaxWidth()            // Ocupa el ancho de la pantalla
+            .navigationBarsPadding(),  // Eleva la barra sobre la barra de gestos
         containerColor = backgroundColor,
         contentColor = contentColor,
-        tonalElevation = 8.dp
+        tonalElevation = 8.dp         // Sombra suave para destacar la barra
     ) {
+        // Iterar por cada pantalla definida en los items
         items.forEach { screen ->
             NavigationBarItem(
                 icon = {
@@ -57,6 +68,7 @@ fun BottomNavigationBar(
                 onClick = {
                     if (currentRoute != screen.route) {
                         navController.navigate(screen.route) {
+                            // Configuración para preservar el estado de la pila
                             popUpTo(navController.graph.startDestinationId) { saveState = true }
                             launchSingleTop = true
                             restoreState = true

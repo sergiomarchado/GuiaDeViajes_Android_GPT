@@ -1,5 +1,10 @@
 package com.example.guiadeviajes_android_gpt.home.presentation.components
-
+/**
+ * HomeTopAppBar.kt
+ *
+ * Composable que define la barra superior de la pantalla principal.
+ * Muestra el logo de la app, nombre de usuario con tokens y un icono de menú para abrir el Drawer.
+ */
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
@@ -23,6 +28,7 @@ fun HomeTopAppBar(
     onMenuClick: () -> Unit,
     backgroundColor: Color = Color(0xFF011A30)
 ) {
+    // TopAppBar de Material3 con colores personalizados
     TopAppBar(
         colors = TopAppBarDefaults.topAppBarColors(
             containerColor             = backgroundColor,
@@ -31,13 +37,15 @@ fun HomeTopAppBar(
             actionIconContentColor     = Color.White
         ),
         modifier = Modifier
-            .fillMaxWidth()
-            .height(100.dp),
+            .fillMaxWidth()   // Ocupa el ancho disponible
+            .height(100.dp),  // Altura fija para adaptarse al diseño
         title = {
+            // Usamos un Box para posicionar los elementos dentro de la AppBar
             Box(
                 Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
+                // 1) Logotipo de la app en el lado izquierdo
                 Image(
                     painter           = painterResource(id = R.drawable.icono_fav),
                     contentDescription = null,
@@ -45,6 +53,7 @@ fun HomeTopAppBar(
                         .size(58.dp)
                         .align(Alignment.CenterStart)
                 )
+                // 2) Nombre de usuario con icono de perfil centrado en la AppBar
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier          = Modifier.align(Alignment.Center)
@@ -62,6 +71,7 @@ fun HomeTopAppBar(
                         fontSize = 14.sp
                     )
                 }
+                // 3) Botón de menú en el lado derecho para abrir el Drawer
                 IconButton(
                     onClick = onMenuClick,
                     modifier = Modifier

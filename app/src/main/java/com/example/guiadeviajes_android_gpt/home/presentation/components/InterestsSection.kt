@@ -1,5 +1,15 @@
 package com.example.guiadeviajes_android_gpt.home.presentation.components
-
+/**
+ * InterestsSection.kt
+ *
+ * Composable que muestra una sección de intereses organizada en tres filas:
+ * 1) Sitios emblemáticos
+ * 2) Experiencias al aire libre y alojamiento
+ * 3) Servicios para mascotas
+ *
+ * Cada fila utiliza un LazyRow para mostrar múltiples elementos seleccionables.
+ *
+ */
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
@@ -18,12 +28,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-/**
- * Sección de intereses organizada en tres filas:
- * 1. Sitios emblemáticos
- * 2. Experiencias al aire libre y alojamiento
- * 3. Servicios para mascotas
- */
 @Composable
 fun InterestsSection(
     museumsChecked: Boolean,
@@ -57,7 +61,7 @@ fun InterestsSection(
     petStoresChecked: Boolean,
     onPetStoresCheckedChange: (Boolean) -> Unit
 ) {
-    // 1) Sitios emblemáticos
+    // 1) Encabezado y elementos de "Sitios emblemáticos"
     Text(
         text = "Explora lo más típico:",
         fontSize = 14.sp,
@@ -65,6 +69,7 @@ fun InterestsSection(
         color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
         modifier = Modifier.padding(bottom = 8.dp)
     )
+    // Lista de tuplas (item, icono) para sitios emblemáticos
     val emblematicItems = listOf(
         Triple("Museos", museumsChecked, onMuseumsCheckedChange) to Icons.Default.Museum,
         Triple("Restaurantes", restaurantsChecked, onRestaurantsCheckedChange) to Icons.Default.Restaurant,
@@ -72,6 +77,7 @@ fun InterestsSection(
     )
     LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         items(emblematicItems) { (item, icon) ->
+            // Desempaquetar los valores de cada interest
             val (label, isChecked, onCheckedChange) = item
             InterestItem(label, isChecked, onCheckedChange, icon)
         }
@@ -79,7 +85,7 @@ fun InterestsSection(
 
     Spacer(modifier = Modifier.height(16.dp))
 
-    // 2) Experiencias outdoor y alojamiento
+    // 2) Encabezado y elementos de "Experiencias outdoor y alojamiento"
     Text(
         text = "Al aire libre y hospedaje:",
         fontSize = 14.sp,
@@ -104,7 +110,7 @@ fun InterestsSection(
 
     Spacer(modifier = Modifier.height(16.dp))
 
-    // 3) Servicios para mascotas
+    // 3) Encabezado y elementos de "Servicios para tu mascota"
     Text(
         text = "Servicios para tu mascota:",
         fontSize = 14.sp,
@@ -127,6 +133,17 @@ fun InterestsSection(
     }
 }
 
+/**
+ * InterestItem.kt
+ *
+ * Elemento individual de interés: icono y etiqueta.
+ * Se muestra dentro de un Card clicable que cambia de fondo al seleccionar.
+ *
+ * @param label Texto descriptivo del interés.
+ * @param isSelected Estado de selección.
+ * @param onClick Callback que recibe el nuevo estado al hacer clic.
+ * @param icon Icono representativo del interés.
+ */
 @Composable
 private fun InterestItem(
     label: String,
@@ -134,7 +151,7 @@ private fun InterestItem(
     onClick: (Boolean) -> Unit,
     icon: ImageVector
 ) {
-    // Colores especiales: rojo para veterinarios/hospitales, azul suave para el resto
+    // Definir color de fondo dinámico: rojo para servicios críticos, azul claro para el resto
     val backgroundColor = when (label) {
         "Veterinarios", "Hospitales 24h" ->
             if (isSelected) Color.Red.copy(alpha = 0.6f)
@@ -144,13 +161,14 @@ private fun InterestItem(
             else           Color.Transparent
     }
 
+    // Card clicable que envuelve icono y etiqueta
     Card(
         shape = MaterialTheme.shapes.medium,
         colors = CardDefaults.cardColors(containerColor = backgroundColor),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         modifier = Modifier
             .size(100.dp)
-            .clickable { onClick(!isSelected) }
+            .clickable { onClick(!isSelected) }  // Alternar estado al clic
     ) {
         Column(
             Modifier
@@ -159,8 +177,10 @@ private fun InterestItem(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            // Icono centrado en la tarjeta
             Icon(icon, contentDescription = null, modifier = Modifier.size(24.dp))
             Spacer(modifier = Modifier.height(4.dp))
+            // Etiqueta de texto con ajuste de línea y estilo
             Text(
                 text = label,
                 fontSize = 12.sp,

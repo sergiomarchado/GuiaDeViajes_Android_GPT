@@ -1,5 +1,11 @@
 package com.example.guiadeviajes_android_gpt.auth.presentation
-
+/**
+ * RegisterScreen.kt
+ *
+ * Pantalla de registro de nuevos usuarios.
+ * Incluye campos para nombre, apellidos, email, contraseña y confirmación de contraseña,
+ * con animaciones de borde y validación básica de contraseñas.
+ */
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
@@ -21,24 +27,29 @@ fun RegisterScreen(
     navController: NavController,
     viewModel: AuthViewModel = hiltViewModel()
 ) {
+    // Estados locales para cada campo de texto
     val firstNameState = remember { mutableStateOf("") }
     val lastNameState = remember { mutableStateOf("") }
     val emailState = remember { mutableStateOf("") }
     val passwordState = remember { mutableStateOf("") }
     val confirmPasswordState = remember { mutableStateOf("") }
 
+    // Estados de foco para animar bordes con "breathing"
     var firstNameFocused by remember { mutableStateOf(false) }
     var lastNameFocused by remember { mutableStateOf(false) }
     var emailFocused by remember { mutableStateOf(false) }
     var passwordFocused by remember { mutableStateOf(false) }
     var confirmPasswordFocused by remember { mutableStateOf(false) }
 
+    // Observables del ViewModel: carga y errores
     val isLoading by viewModel.isLoading.collectAsState()
     val errorMessage by viewModel.errorMessage.collectAsState()
 
+    // Snackbar para mostrar mensajes de error o confirmación
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
 
+    // Transición infinita para borde "idle" (sin foco)
     val idleTransition = rememberInfiniteTransition()
     val idleAlpha by idleTransition.animateFloat(
         initialValue = 0.5f,
@@ -50,6 +61,7 @@ fun RegisterScreen(
     )
     val idleBorderColor = Color(0xFFB0BEC5).copy(alpha = idleAlpha)
 
+    // Transición infinita para borde "focused" (con foco)
     val focusedTransition = rememberInfiniteTransition()
     val focusedAlpha by focusedTransition.animateFloat(
         initialValue = 0.5f,
@@ -61,6 +73,7 @@ fun RegisterScreen(
     )
     val focusedBorderColor = Color.Cyan.copy(alpha = focusedAlpha)
 
+    // Snackbar cuando errorMessage cambie
     LaunchedEffect(errorMessage) {
         errorMessage?.let { message ->
             snackbarHostState.showSnackbar(message)
@@ -68,6 +81,7 @@ fun RegisterScreen(
         }
     }
 
+    // Estructura principal con Scaffold y fondo oscuro
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         containerColor = Color(0xFF011A30)
@@ -84,6 +98,7 @@ fun RegisterScreen(
                     .padding(horizontal = 32.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                // Título de la pantalla de registro
                 Text(
                     text = "Registro de Usuario",
                     color = Color.White,
@@ -91,6 +106,7 @@ fun RegisterScreen(
                     modifier = Modifier.padding(bottom = 16.dp)
                 )
 
+                // Campo Nombre con etiqueta animada
                 AnimatedLabelTextField(
                     value = firstNameState.value,
                     onValueChange = { firstNameState.value = it },
@@ -103,6 +119,7 @@ fun RegisterScreen(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
+                // Campo Apellidos
                 AnimatedLabelTextField(
                     value = lastNameState.value,
                     onValueChange = { lastNameState.value = it },
@@ -115,6 +132,8 @@ fun RegisterScreen(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
+
+                // Campo Email
                 AnimatedLabelTextField(
                     value = emailState.value,
                     onValueChange = { emailState.value = it },
@@ -127,6 +146,7 @@ fun RegisterScreen(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
+                // Campo Contraseña
                 AnimatedLabelTextField(
                     value = passwordState.value,
                     onValueChange = { passwordState.value = it },
@@ -140,6 +160,7 @@ fun RegisterScreen(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
+                // Campo Confirmar Contraseña
                 AnimatedLabelTextField(
                     value = confirmPasswordState.value,
                     onValueChange = { confirmPasswordState.value = it },
@@ -152,6 +173,7 @@ fun RegisterScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
+                // Botón de registro con validación de contraseñas
                 Button(
                     onClick = {
                         if (passwordState.value == confirmPasswordState.value) {
@@ -161,6 +183,7 @@ fun RegisterScreen(
                                 firstName = firstNameState.value.trim(),
                                 lastName = lastNameState.value.trim(),
                                 onVerificationEmailSent = {
+                                    // Navegar a pantalla de verificación de email
                                     navController.navigate("email_verification") {
                                         popUpTo("register") { inclusive = true }
                                     }
@@ -172,6 +195,7 @@ fun RegisterScreen(
                                 }
                             )
                         } else {
+                            // Mensaje si las contraseñas no coinciden
                             coroutineScope.launch {
                                 snackbarHostState.showSnackbar("Las contraseñas no coinciden.")
                             }
@@ -189,10 +213,12 @@ fun RegisterScreen(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
+                // Enlace para retornar a login
                 TextButton(onClick = { navController.navigate("login") }) {
                     Text("¿Ya tienes cuenta? Inicia sesión", color = Color.White)
                 }
 
+                // Indicador de progreso durante carga
                 if (isLoading) {
                     Spacer(modifier = Modifier.height(16.dp))
                     CircularProgressIndicator(color = Color.White)

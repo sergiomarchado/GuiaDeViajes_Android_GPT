@@ -6,7 +6,13 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
 /**
- * ViewModel para HomeScreen, gestiona acciones de la barra de navegación lateral.
+ * HomeViewModel.kt
+ *
+ * ViewModel para HomeScreen, gestiona acciones generales de la pantalla principal,
+ * como cerrar sesión del usuario.
+ *
+ * @constructor Inyecta FirebaseAuth para manejar logout.
+ * @param firebaseAuth Instancia de FirebaseAuth para la autenticación.
  */
 @HiltViewModel
 class HomeViewModel @Inject constructor(
@@ -14,14 +20,16 @@ class HomeViewModel @Inject constructor(
 ) : ViewModel() {
 
     /**
-     * Cierra la sesión de Firebase y limpia cualquier dato de usuario en curso.
+     * Cierra la sesión de Firebase.
+     * Navegación posterior gestionada por la UI (HomeScreen).
      */
     fun logout() {
         firebaseAuth.signOut()
     }
 
     /**
-     * Placeholder para posibles futuras acciones (por ejemplo, fetch de perfil).
+     * Metodo placeholder para futuros manejos de errores o limpieza de estados.
+     * Actualmente no se utilizan errores en HomeScreen.
      */
     fun clearErrorMessage() {
         // No hay errores gestionados en HomeScreen actualmente.

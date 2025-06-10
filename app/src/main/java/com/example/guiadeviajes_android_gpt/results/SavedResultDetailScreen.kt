@@ -23,7 +23,16 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.guiadeviajes_android_gpt.home.data.remote.dto.SavedResult
 import com.example.guiadeviajes_android_gpt.home.presentation.components.MarkdownWebView
-
+/**
+ * SavedResultDetailScreen.kt
+ *
+ * Pantalla de detalle para una consulta guardada por el usuario.
+ * Muestra los parámetros de búsqueda y el contenido en Markdown renderizado.
+ *
+ * @param id            Identificador de la consulta guardada a mostrar.
+ * @param navController Controlador de navegación para volver atrás.
+ * @param viewModel     ViewModel que expone la lista de consultas guardadas.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SavedResultDetailScreen(
@@ -31,11 +40,12 @@ fun SavedResultDetailScreen(
     navController: NavController,
     viewModel: SavedResultsViewModel = hiltViewModel()
 ) {
-    // Observamos la lista
+    // 1) Obtener lista de consultas guardadas desde el ViewModel
     val savedList = viewModel.savedResults.collectAsState().value
-    // Buscamos el elemento por ID
+    // 2) Buscar la consulta cuyo id coincida
     val item: SavedResult? = savedList.find { it.id == id }
 
+    // 3) Estructura principal UI
     Scaffold(
         topBar = {
             TopAppBar(
@@ -51,6 +61,7 @@ fun SavedResultDetailScreen(
             )
         }
     ) { padding ->
+        // 4) Si la consulta existe, mostrar detalles
         if (item != null) {
             Column(
                 modifier = Modifier
@@ -59,21 +70,26 @@ fun SavedResultDetailScreen(
                     .verticalScroll(rememberScrollState())
                     .padding(16.dp)
             ) {
+                // Mostrar ciudad y país en la cabecera
                 Text(
                     text = "${item.city}, ${item.country}",
                     style = MaterialTheme.typography.titleLarge
                 )
                 Spacer(Modifier.height(4.dp))
+                // Mostrar intereses seleccionados
                 Text(
                     text = "Intereses: ${item.interests}",
                     style = MaterialTheme.typography.bodyMedium
                 )
                 Spacer(Modifier.height(8.dp))
+                // Divisor visual antes del contenido markdown
                 HorizontalDivider()
                 Spacer(Modifier.height(8.dp))
+                // Renderizar el contenido Markdown usando MarkdownWebView
                 MarkdownWebView(markdown = item.markdown)
             }
         } else {
+            // 5) Mensaje de error si no se encuentra la consulta
             Box(
                 modifier = Modifier
                     .fillMaxSize()

@@ -1,6 +1,5 @@
-package com.example.guiadeviajes_android_gpt.promotions.presentation.data
+package com.example.guiadeviajes_android_gpt.promotions.data
 
-import com.example.guiadeviajes_android_gpt.promotions.presentation.Promotion
 import com.google.firebase.database.*
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -12,20 +11,23 @@ import javax.inject.Singleton
  * PromotionsRepository.kt
  *
  * Repositorio para leer promociones definidas en Firebase Realtime Database.
- * Observa el nodo `/promotions` y emite en tiempo real la lista completa.
+ * Observa el nodo `/patrocinadores` y emite en tiempo real la lista completa.
  *
  * Cada promoción en Firebase debe tener la estructura:
- * promotions/{promoId}:
+ * patrocinadores/{promoId}:
  *  - imageUrl: String (.png/.jpg)
  *  - name: String
  *  - code: String
  *  - terms: String
  */
 @Singleton
-class PromotionsRepository @Inject constructor(
-    private val database: FirebaseDatabase
-) {
-    // Referencia al nodo de promociones
+class PromotionsRepository @Inject constructor() {
+    // Instancia de Firebase apuntando a la región europea
+    private val database: FirebaseDatabase = FirebaseDatabase.getInstance(
+        "https://guiaviajesia-default-rtdb.europe-west1.firebasedatabase.app/"
+    )
+
+    // Referencia al nodo de patrocinadores
     private val promosRef: DatabaseReference = database.getReference("promotions")
 
     /**

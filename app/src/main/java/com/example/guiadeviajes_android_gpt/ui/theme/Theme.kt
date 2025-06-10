@@ -1,5 +1,10 @@
 package com.example.guiadeviajes_android_gpt.ui.theme
-
+/**
+ * Theme.kt
+ *
+ * Define los esquemas de color y el tema global de la aplicación.
+ * Utiliza Material3, colores dinámicos en Android 12+ y configura barras de estado/navigation edge-to-edge.
+ */
 import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -17,19 +22,36 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 
-// Definición de esquemas de color para modo oscuro y claro
+/**
+ * Esquema de colores para modo oscuro personalizado.
+ */
 private val DarkColorScheme = darkColorScheme(
     primary   = Color(0xFF011A30),
     secondary = PurpleGrey80,
     tertiary  = Pink80
 )
 
+/**
+ * Esquema de colores para modo claro personalizado.
+ */
 private val LightColorScheme = lightColorScheme(
     primary   = Color(0xFF011A30),
     secondary = PurpleGrey40,
     tertiary  = Pink40
 )
 
+/**
+ * Composable que aplica el tema global de la app.
+ *
+ * - Selecciona esquema de color dinámico o fijo según versión Android y preferencia de sistema.
+ * - Configura edge-to-edge para dibujar contenido tras las barras del sistema.
+ * - Ajusta colores e iconos de las barras de estado y navegación.
+ * - Envuelve el contenido en MaterialTheme con tipografía definida.
+ *
+ * @param darkTheme Si es true, fuerza modo oscuro (por defecto detecta el sistema).
+ * @param dynamicColor Si es true, utiliza color dinámico en Android 12+.
+ * @param content Composable que representa la UI a la que se le aplica el tema.
+ */
 @Composable
 fun GuiaDeViajes_Android_GPTTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
@@ -75,7 +97,7 @@ fun GuiaDeViajes_Android_GPTTheme(
         }
     }
 
-    // 4) Aplicamos MaterialTheme
+    // 4) Aplicación del tema Material3 con esquema de color y tipografía personalizada
     MaterialTheme(
         colorScheme = colorScheme,
         typography  = Typography,

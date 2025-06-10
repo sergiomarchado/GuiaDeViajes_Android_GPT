@@ -41,6 +41,7 @@ android {
 
         buildConfigField("String", "API_KEY", "\"$apiKey\"")
         buildConfigField("String", "API_KEYG", "\"$apiKeyG\"")
+
     }
 
     buildTypes {
@@ -129,6 +130,12 @@ dependencies {
 
     // Accompanist: para controlar color de status & navigation bar
     implementation(libs.accompanist.systemuicontroller)
+
+    implementation(libs.play.services.maps)
+    implementation(libs.play.services.location)
+    implementation(libs.android.maps.utils)
+
+
 
 
 }
