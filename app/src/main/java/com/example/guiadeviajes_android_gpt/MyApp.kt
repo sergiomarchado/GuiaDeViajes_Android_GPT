@@ -14,15 +14,10 @@ import dagger.hilt.android.HiltAndroidApp
 @HiltAndroidApp
 class MyApp : Application() {
 
-    /**
-     * Se ejecuta al crear la aplicación.
-     * Aquí inicializamos la API de Google Places si no está ya inicializada.
-     */
     override fun onCreate() {
         super.onCreate()
-        // Comprueba si la librería de Places no está ya inicializada
+        // Inicializa Places SDK con la clave que inyectaste en BuildConfig.API_KEYG
         if (!Places.isInitialized()) {
-            // Inicializa Places con la API_KEY (BuildCongig -> localproperties)
             Places.initialize(applicationContext, BuildConfig.API_KEYG)
         }
     }

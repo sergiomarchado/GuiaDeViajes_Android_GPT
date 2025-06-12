@@ -10,45 +10,87 @@ import javax.inject.Singleton
 /**
  * PromotionsRepository.kt
  *
- * Repositorio para leer promociones definidas en Firebase Realtime Database.
- * Observa el nodo `/patrocinadores` y emite en tiempo real la lista completa.
+ * Repositorio para leer promociones con múltiples ofertas desde
+ * Firebase Realtime Database. Observa el nodo `/promotions` y emite
+ * en tiempo real la lista de Promotion, cada una con su lista
+ * de Offer.
  *
- * Cada promoción en Firebase debe tener la estructura:
- * patrocinadores/{promoId}:
- *  - imageUrl: String (.png/.jpg)
- *  - name: String
- *  - code: String
- *  - terms: String
+ * Estructura esperada en Firebase:
+ * promotions/{promoId}:
+ *   - name:       String
+ *   - imageUrl:   String
+ *   - offers:
+ *       {offerId}:
+ *         - code:       String
+ *         - title:      String
+ *         - terms:      String
+ *         - validUntil: String
  */
 @Singleton
 class PromotionsRepository @Inject constructor() {
-    // Instancia de Firebase apuntando a la región europea
+    // Instancia apuntando a la URL de tu RTDB en Europa
     private val database: FirebaseDatabase = FirebaseDatabase.getInstance(
         "https://guiaviajesia-default-rtdb.europe-west1.firebasedatabase.app/"
     )
 
-    // Referencia al nodo de patrocinadores
-    private val promosRef: DatabaseReference = database.getReference("promotions")
+    // Referencia al nodo principal
+    private val promotionsRef: DatabaseReference =
+        database.getReference("promotions")
 
     /**
-     * Observa en tiempo real el listado de promociones.
-     * Emite la lista actualizada cada vez que cambian los datos.
-     *
-     * @return Flow que emite List<Promotion>
+     * Observa en tiempo real el listado de promociones, mapeando
+     * cada snapshot a Promotion + List<Offer>.
      */
     fun observePromotions(): Flow<List<Promotion>> = callbackFlow {
         val listener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                val list = snapshot.children.mapNotNull { ds ->
-                    ds.getValue(Promotion::class.java)?.copy(id = ds.key.orEmpty())
+                val list = snapshot.children.mapNotNull { promoSnap ->
+                    val id       = promoSnap.key ?: return@mapNotNull null
+                    val name     = promoSnap.child("name").getValue(String::class.java)
+                        ?: return@mapNotNull null
+                    val imageUrl = promoSnap.child("imageUrl")
+                        .getValue(String::class.java).orEmpty()
+
+                    // Mapeamos el sub-nodo "offers"
+                    val offers = promoSnap.child("offers").children.mapNotNull { offerSnap ->
+                        val offerId    = offerSnap.key ?: return@mapNotNull null
+                        val code       = offerSnap.child("code")
+                            .getValue(String::class.java)
+                            ?: return@mapNotNull null
+                        val title      = offerSnap.child("title")
+                            .getValue(String::class.java)
+                            .orEmpty()
+                        val terms      = offerSnap.child("terms")
+                            .getValue(String::class.java)
+                            .orEmpty()
+                        val validUntil = offerSnap.child("validUntil")
+                            .getValue(String::class.java)
+                            .orEmpty()
+                        Offer(
+                            id         = offerId,
+                            code       = code,
+                            title      = title,
+                            terms      = terms,
+                            validUntil = validUntil
+                        )
+                    }
+
+                    Promotion(
+                        id       = id,
+                        name     = name,
+                        imageUrl = imageUrl,
+                        offers   = offers
+                    )
                 }
-                trySend(list)
+                trySend(list).isSuccess
             }
+
             override fun onCancelled(error: DatabaseError) {
                 close(error.toException())
             }
         }
-        promosRef.addValueEventListener(listener)
-        awaitClose { promosRef.removeEventListener(listener) }
+
+        promotionsRef.addValueEventListener(listener)
+        awaitClose { promotionsRef.removeEventListener(listener) }
     }
 }

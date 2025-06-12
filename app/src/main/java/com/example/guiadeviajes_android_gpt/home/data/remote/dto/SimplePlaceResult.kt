@@ -19,5 +19,6 @@ data class SimplePlaceResult(
     val address: String?,
     val website: String?,
     val phoneNumber: String?,
-    val rating: Double?
+    val rating: Double?,
+    val photos:      List<String> = emptyList()  // valor por defecto
 )

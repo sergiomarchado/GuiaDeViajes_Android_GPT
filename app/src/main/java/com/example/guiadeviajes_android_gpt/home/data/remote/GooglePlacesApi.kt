@@ -45,7 +45,7 @@ interface GooglePlacesApi {
     suspend fun getPlaceDetails(
         @Query("place_id") placeId: String,
         @Query("key")      apiKey:  String,
-        @Query("fields")   fields:  String = "name,formatted_address,website,international_phone_number,rating"
+        @Query("fields")   fields:  String = "name,formatted_address,website,international_phone_number,rating,photos"
     ): Response<PlaceDetailsResponse>
 
     /**

@@ -38,6 +38,7 @@ import com.example.guiadeviajes_android_gpt.home.presentation.HomeScreen
 import com.example.guiadeviajes_android_gpt.home.presentation.HomeViewModel
 import com.example.guiadeviajes_android_gpt.home.presentation.components.DrawerContent
 import com.example.guiadeviajes_android_gpt.map.presentation.MapScreen
+import com.example.guiadeviajes_android_gpt.map.presentation.PlacesListScreen
 import com.example.guiadeviajes_android_gpt.navigation.BottomBarScreen
 import com.example.guiadeviajes_android_gpt.navigation.BottomNavigationBar
 import com.example.guiadeviajes_android_gpt.profile.presentation.ProfileScreen
@@ -67,7 +68,7 @@ class MainActivity : ComponentActivity() {
                 // Controlador de navegación de Compose
                 val navController = rememberNavController()
 
-                // Configuración del Drawer (solo en Home, Profile y Promotions de momento)
+                // Configuración del Drawer (solo en Home, Profile, Promotions y Map de momento)
                 val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
                 val scope: CoroutineScope = rememberCoroutineScope()
 
@@ -76,7 +77,8 @@ class MainActivity : ComponentActivity() {
                 val currentRoute = backStack?.destination?.route
                 val hasDrawer = currentRoute == BottomBarScreen.Home.route ||
                 currentRoute == BottomBarScreen.Profile.route ||
-                        currentRoute == BottomBarScreen.Promotions.route
+                        currentRoute == BottomBarScreen.Promotions.route ||
+                        currentRoute == BottomBarScreen.Map.route
 
                 // Inyección de dependencias: ViewModels con Hilt
                 val authVM    : AuthViewModel    = hiltViewModel()
@@ -146,9 +148,12 @@ private fun ContentScaffold(
         containerColor = MaterialTheme.colorScheme.background,
         bottomBar      = {
             // Muestra la BottomNavigation solo en Home y Profile (de momento)
-            if (currentRoute == BottomBarScreen.Home.route ||
-                currentRoute == BottomBarScreen.Profile.route ||
-                currentRoute == BottomBarScreen.Promotions.route) {
+            if (currentRoute in listOf(
+                    BottomBarScreen.Home.route,
+                    BottomBarScreen.Profile.route,
+                    BottomBarScreen.Promotions.route,
+                    BottomBarScreen.Map.route
+                )) {
                 BottomNavigationBar(
                     navController   = navController,
                     items           = listOf(
@@ -187,7 +192,7 @@ private fun ContentScaffold(
                 composable("email_verification") { EmailVerificationScreen(navController, authVM) }
                 composable("forgot_password")    { ForgotPasswordScreen(navController, authVM) }
 
-                // Home, Map, Profile y Promotions en bottom bar
+                // Home, Map, Profile, Promotions y Map en bottom bar
                 composable(BottomBarScreen.Home.route) {
                     HomeScreen(
                         navController = navController,
@@ -196,7 +201,12 @@ private fun ContentScaffold(
                         scope         = scope
                     )
                 }
-                composable(BottomBarScreen.Map.route)     { MapScreen() }
+                composable(BottomBarScreen.Map.route) {
+                    MapScreen(navController, drawerState, scope)
+                }
+                composable("places_list") {
+                    PlacesListScreen(navController)
+                }
                 composable(BottomBarScreen.Profile.route) {
                     ProfileScreen(navController, drawerState, scope, profileVM)
                 }

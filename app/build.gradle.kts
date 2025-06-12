@@ -32,6 +32,7 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
+        // 1) Cargar keys desde local.properties
         val localProperties = Properties().apply {
             load(rootProject.file("local.properties").inputStream())
         }
@@ -39,8 +40,13 @@ android {
         val apiKey = localProperties["API_KEY"] as String
         val apiKeyG = localProperties["API_KEYG"] as String
 
+        
         buildConfigField("String", "API_KEY", "\"$apiKey\"")
         buildConfigField("String", "API_KEYG", "\"$apiKeyG\"")
+
+        // 2) Inyectar la Maps Key en el manifest (meta-data)
+        val mapsKey = localProperties.getProperty("API_KEYG")
+        manifestPlaceholders["com.google.android.geo.API_KEY"] = mapsKey
 
     }
 
@@ -95,6 +101,7 @@ dependencies {
     implementation(libs.moshi)
     implementation(libs.firebase.auth)
     implementation(libs.firebase.database)
+    implementation(libs.ads.mobile.sdk)
     ksp(libs.moshi.kotlin.codegen)
 
     // OkHttp Logging Interceptor
@@ -134,9 +141,13 @@ dependencies {
     implementation(libs.play.services.maps)
     implementation(libs.play.services.location)
     implementation(libs.android.maps.utils)
-
-
-
-
+    implementation(libs.maps.compose)
+    implementation(libs.material3)
+    implementation(libs.androidx.material3.window.size.class1)
+    implementation(libs.androidx.material3.adaptive.navigation.suite)
+    implementation(libs.androidx.material)
+    implementation(libs.coil.compose)
+    implementation(libs.coil.network.okhttp)
+    implementation(libs.androidx.material3.window.size.class1.v140alpha15)
+    implementation(libs.androidx.material3.adaptive.navigation.suite)
 }
-

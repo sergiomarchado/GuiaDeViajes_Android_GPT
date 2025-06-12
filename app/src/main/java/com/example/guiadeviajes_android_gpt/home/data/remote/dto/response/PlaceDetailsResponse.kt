@@ -1,4 +1,7 @@
 package com.example.guiadeviajes_android_gpt.home.data.remote.dto.response
+
+import com.example.guiadeviajes_android_gpt.home.data.remote.dto.PhotoMetadata
+
 /**
  * PlaceDetailsResponse.kt
  *
@@ -26,5 +29,6 @@ data class PlaceDetailsResult(
     val formatted_address: String,
     val website: String?,
     val international_phone_number: String?,
-    val rating: Double?
+    val rating: Double?,
+    val photos: List<PhotoMetadata>?
 )

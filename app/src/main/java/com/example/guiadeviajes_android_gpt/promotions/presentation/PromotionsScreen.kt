@@ -4,12 +4,18 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DrawerState
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -28,9 +34,10 @@ import kotlinx.coroutines.launch
 /**
  * PromotionsScreen.kt
  *
- * Pantalla que muestra los patrocinios desde Firebase (/promotions).
- * Se invoca dentro de tu Scaffold global (ContentScaffold).
- * Al tocar una tarjeta abre un AlertDialog con código y términos.
+ * Muestra los patrocinios desde Firebase (/promotions) con múltiples ofertas.
+ * - HomeTopAppBar con botón de Drawer.
+ * - Lista de promociones.
+ * - Al tocar, abre un AlertDialog con todas las ofertas (code + terms).
  */
 
 @Composable
@@ -42,13 +49,14 @@ fun PromotionsScreen(
 ) {
     // 1) Observa promociones
     val promotions by viewModel.promotions.collectAsState()
-    // 2) Estado para el diálogo de detalle
+
+    // 2) Promo seleccionada para el diálogo
     var dialogPromo by remember { mutableStateOf<Promotion?>(null) }
 
     Scaffold(
         topBar = {
             HomeTopAppBar(
-                userName    = "Sergio",
+                userName    = "Promociones",
                 userTokens  = promotions.size,
                 onMenuClick = { scope.launch { drawerState.open() } }
             )
@@ -56,7 +64,7 @@ fun PromotionsScreen(
         containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
         LazyColumn(
-            modifier = Modifier
+            Modifier
                 .fillMaxSize()
                 .padding(padding)
                 .padding(horizontal = 16.dp, vertical = 16.dp),
@@ -68,7 +76,7 @@ fun PromotionsScreen(
                     text = "Promociones",
                     style = MaterialTheme.typography.headlineMedium
                 )
-                Spacer(Modifier.height(5.dp))
+                Spacer(Modifier.height(4.dp))
                 Text(
                     text = "Disfruta de algunos códigos de descuento que disfrutará tu bolsillo y tu mascota 😜🐶",
                     style = MaterialTheme.typography.bodyMedium
@@ -76,7 +84,7 @@ fun PromotionsScreen(
                 Spacer(Modifier.height(16.dp))
             }
 
-            // Lista de promociones
+            // Si no hay promociones
             if (promotions.isEmpty()) {
                 item {
                     Box(
@@ -92,6 +100,7 @@ fun PromotionsScreen(
                     }
                 }
             } else {
+                // Lista de promociones
                 items(promotions, key = { it.id }) { promo ->
                     Card(
                         shape     = RoundedCornerShape(8.dp),
@@ -121,28 +130,55 @@ fun PromotionsScreen(
             }
         }
 
-        // Diálogo de detalle
+        // Diálogo con todas las ofertas de la promo, scrollable y con título/terms/validUntil
         dialogPromo?.let { promo ->
             AlertDialog(
                 onDismissRequest = { dialogPromo = null },
                 title = {
                     Text(
-                        promo.name,
-                        fontWeight = FontWeight.Bold
+                        text      = promo.name,
+                        fontWeight = FontWeight.Bold,
+                        fontSize  = 20.sp
                     )
                 },
                 text = {
-                    Column {
-                        Spacer(Modifier.height(8.dp))
-                        Text("Código de descuento:", fontWeight = FontWeight.Medium)
-                        Text(
-                            promo.code,
-                            fontSize = 20.sp,
-                            color    = MaterialTheme.colorScheme.primary
-                        )
-                        Spacer(Modifier.height(8.dp))
-                        Text("Términos y condiciones:", fontWeight = FontWeight.Medium)
-                        Text(promo.terms)
+                    // Caja con scroll y altura máxima
+                    Box(
+                        Modifier
+                            .heightIn(max = 400.dp)
+                            .verticalScroll(rememberScrollState())
+                    ) {
+                        Column {
+                            promo.offers.forEach { offer ->
+                                // Título de la oferta
+                                Text(
+                                    text      = offer.title,
+                                    fontWeight = FontWeight.SemiBold,
+                                    fontSize  = 16.sp
+                                )
+                                Spacer(Modifier.height(4.dp))
+                                // Código
+                                Text(
+                                    text       = "Código: ${offer.code}",
+                                    fontWeight = FontWeight.Medium
+                                )
+                                Spacer(Modifier.height(4.dp))
+                                // Terms
+                                Text(
+                                    text  = offer.terms,
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+                                Spacer(Modifier.height(4.dp))
+                                // Fecha de validez
+                                Text(
+                                    text  = "Válido hasta ${offer.validUntil}",
+                                    style = MaterialTheme.typography.bodySmall
+                                )
+                                Spacer(Modifier.height(8.dp))
+                                HorizontalDivider()
+                                Spacer(Modifier.height(8.dp))
+                            }
+                        }
                     }
                 },
                 confirmButton = {
@@ -152,5 +188,6 @@ fun PromotionsScreen(
                 }
             )
         }
+
     }
 }

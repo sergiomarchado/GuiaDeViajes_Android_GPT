@@ -10,6 +10,7 @@ import android.util.Log
 import com.example.guiadeviajes_android_gpt.BuildConfig
 import com.example.guiadeviajes_android_gpt.home.data.remote.GooglePlacesApi
 import com.example.guiadeviajes_android_gpt.home.data.remote.dto.SimplePlaceResult
+import com.example.guiadeviajes_android_gpt.home.data.remote.dto.response.PlacesSearchResponse
 import javax.inject.Inject
 
 class GooglePlacesRepository @Inject constructor(
@@ -48,7 +49,8 @@ class GooglePlacesRepository @Inject constructor(
                         address     = place.formatted_address,
                         website     = null,
                         phoneNumber = null,
-                        rating      = place.rating
+                        rating      = place.rating,
+                        photos      = emptyList()
                     )
                 }
             } else {
@@ -108,22 +110,22 @@ class GooglePlacesRepository @Inject constructor(
                 apiKey  = BuildConfig.API_KEYG
             )
             if (response.isSuccessful) {
-                response.body()?.result?.let {
+                response.body()?.result?.let { d ->
                     SimplePlaceResult(
                         placeId     = placeId,
-                        name        = it.name,
-                        address     = it.formatted_address,
-                        website     = it.website,
-                        phoneNumber = it.international_phone_number,
-                        rating      = it.rating
+                        name        = d.name,
+                        address     = d.formatted_address,
+                        website     = d.website,
+                        phoneNumber = d.international_phone_number,
+                        rating      = d.rating,
+                        photos      = d.photos
+                            ?.map { photo -> photo.photo_reference }  // <<< aquí devolvemos el String
+                            ?: emptyList()
                     )
                 }
-            } else {
-                Log.e("PLACES_API", "❌ Error Details: ${response.errorBody()?.string()}")
-                null
-            }
-        } catch (e: Exception) {
-            Log.e("PLACES_API", "❌ Excepción Details: ${e.message}", e)
+            } else null
+        } catch(e:Exception){
+            Log.e("PLACES_API","Excepción Details",e)
             null
         }
     }
@@ -164,7 +166,7 @@ class GooglePlacesRepository @Inject constructor(
                         address     = place.formatted_address,
                         website     = null,
                         phoneNumber = null,
-                        rating      = place.rating
+                        rating      = place.rating,
                     )
                 }
             } else {
@@ -183,7 +185,7 @@ class GooglePlacesRepository @Inject constructor(
      * @param address Dirección completa.
      * @return Par de coordenadas (lat, lng) o null si no se encontró.
      */
-    private suspend fun geocodeAddress(address: String): Pair<Double, Double>? {
+    suspend fun geocodeAddress(address: String): Pair<Double, Double>? {
         return try {
             val response = api.geocode(address, BuildConfig.API_KEYG)
             if (response.isSuccessful) {
@@ -281,5 +283,25 @@ class GooglePlacesRepository @Inject constructor(
         return collected
             .distinctBy { it.placeId }
             .take(maxResults)
+    }
+    /**
+     * Devuelve la respuesta raw de Nearby Search (DTO) sin mapear a SimplePlaceResult.
+     */
+    suspend fun getNearbyRaw(
+        lat: Double,
+        lng: Double,
+        radius: Int = 20_000,
+        type: String,
+        keyword: String? = null
+    ): PlacesSearchResponse {
+        val location = "$lat,$lng"
+        val response = api.nearbySearch(
+            location = location,
+            radius   = radius,
+            type     = type,
+            keyword  = keyword,
+            apiKey   = BuildConfig.API_KEYG
+        )
+        return response.body() ?: PlacesSearchResponse(emptyList())
     }
 }

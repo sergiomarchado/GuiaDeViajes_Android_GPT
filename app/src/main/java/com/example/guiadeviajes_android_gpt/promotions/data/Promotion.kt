@@ -1,19 +1,16 @@
-/**
- * Promotion.kt
- *
- * Modelo de datos que representa un patrocinador o promoción cargada desde Firebase Realtime Database.
- * Este objeto se corresponde con la estructura del nodo `/promotions/{promoId}`:
- *  - imageUrl: URL a la imagen (.png, .jpg, etc.)
- *  - name:     Nombre del patrocinador o título de la promoción
- *  - code:     Código de descuento asociado
- *  - terms:    Texto con condiciones o descripción
- */
 package com.example.guiadeviajes_android_gpt.promotions.data
 
+/**
+ * Representa un patrocinador con múltiples ofertas.
+ *
+ * @param id       Identificador de la promoción (clave en Firebase).
+ * @param name     Nombre del patrocinador.
+ * @param imageUrl URL de su logo o imagen.
+ * @param offers   Lista de ofertas disponibles.
+ */
 data class Promotion(
     val id: String = "",
-    val imageUrl: String = "",
     val name: String = "",
-    val code: String = "",
-    val terms: String = ""
+    val imageUrl: String = "",
+    val offers: List<Offer> = emptyList()
 )
