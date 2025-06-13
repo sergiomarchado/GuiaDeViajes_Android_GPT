@@ -19,6 +19,12 @@ Ofrece búsquedas geolocalizadas, filtros inteligentes, caché local y visualiza
 
 ---
 
+## 🎬 Demo en vídeo
+
+[![Demo de la app](https://img.youtube.com/vi/MD548YvtCis/0.jpg)](https://youtu.be/MD548YvtCis)
+
+---
+
 ## 🛠️ Tecnologías utilizadas
 
 | Categoría    | Tecnología                          |
@@ -118,12 +124,6 @@ fun fetchPlaces(center: LatLng, radius: Int = 1500)
 ```
 
 Esto evita múltiples llamadas a la API innecesarias, reduce costes y mejora la velocidad de carga.
-
----
-
-## 🎬 Demo en vídeo
-
-(📹 Inserta aquí un vídeo grabado con OBS Studio o GIF que muestre: búsqueda, filtros, selección y navegación a lugares)
 
 ---
 
