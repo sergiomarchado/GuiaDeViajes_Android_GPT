@@ -42,6 +42,11 @@ location = "21.3.0"
 mapsUtils = "3.5.0"
 mapsCompose = "2.11.4"
 adsMobileSdk = "0.16.0-alpha01"
+roomCommonJvm = "2.7.1"
+roomCompilerVersion = "2.6.1"
+roomKtx = "2.7.1"
+roomRuntime = "2.7.1"
+roomRuntimeAndroid = "2.7.1"
 
 
 [libraries]
@@ -54,6 +59,9 @@ androidx-material-icons-extended = { module = "androidx.compose.material:materia
 androidx-material3-adaptive-navigation-suite = { module = "androidx.compose.material3:material3-adaptive-navigation-suite", version.ref = "material3AdaptiveNavigationSuite" }
 androidx-material3-window-size-class1 = { module = "androidx.compose.material3:material3-window-size-class", version.ref = "material3WindowSizeClass" }
 androidx-material3-window-size-class1-v140alpha15 = { module = "androidx.compose.material3:material3-window-size-class", version.ref = "material3WindowSizeClassVersion" }
+androidx-room-compiler-v261 = { module = "androidx.room:room-compiler", version.ref = "roomCompilerVersion" }
+androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "roomKtx" }
+androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "roomRuntime" }
 androidx-ui = { group = "androidx.compose.ui", name = "ui" }
 androidx-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
 androidx-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
@@ -94,6 +102,8 @@ play-services-location = { group = "com.google.android.gms", name = "play-servic
 android-maps-utils    = { group = "com.google.maps.android", name = "android-maps-utils", version.ref = "mapsUtils" }
 maps-compose = { group = "com.google.maps.android", name = "maps-compose", version.ref = "mapsCompose" }
 ads-mobile-sdk = { group = "com.google.android.libraries.ads.mobile.sdk", name = "ads-mobile-sdk", version.ref = "adsMobileSdk" }
+androidx-room-common-jvm = { group = "androidx.room", name = "room-common-jvm", version.ref = "roomCommonJvm" }
+androidx-room-runtime-android = { group = "androidx.room", name = "room-runtime-android", version.ref = "roomRuntimeAndroid" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

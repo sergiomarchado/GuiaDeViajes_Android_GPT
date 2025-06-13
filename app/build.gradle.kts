@@ -80,7 +80,7 @@ android {
 }
 
 dependencies {
-    // AndroidX y Compose
+    // AndroidX & Compose
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -90,36 +90,66 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation(libs.androidx.material.icons.extended)
+    implementation(libs.androidx.compose.animation)
+    implementation(libs.androidx.compose.ui.text)
+
+    // Material y compatibilidad
+    implementation(libs.material)
+    implementation(libs.androidx.material)
+    implementation(libs.androidx.material3.window.size.class1)
+    implementation(libs.androidx.material3.window.size.class1.v140alpha15)
+    implementation(libs.androidx.material3.adaptive.navigation.suite)
 
     // Navigation Compose
     implementation(libs.androidx.navigation.compose)
 
-    // Retrofit y Moshi
+    // Retrofit y JSON
     implementation(libs.retrofit)
     implementation(libs.retrofit.moshi.converter)
     implementation(libs.retrofit.gson.converter)
     implementation(libs.moshi)
-    implementation(libs.firebase.auth)
-    implementation(libs.firebase.database)
-    implementation(libs.ads.mobile.sdk)
+    implementation(libs.kotlinx.serialization.json)
     ksp(libs.moshi.kotlin.codegen)
 
-    // OkHttp Logging Interceptor
+    // OkHttp Logging
     implementation(libs.okhttp.logging.interceptor)
 
-    // Kotlin Serialization JSON
-    implementation(libs.kotlinx.serialization.json)
+    // Firebase
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.auth)
+    implementation(libs.firebase.database)
+    implementation(libs.firebase.analytics)
+    implementation(libs.ads.mobile.sdk)
 
-    // Hilt
+    // Maps y ubicación
+    implementation(libs.play.services.maps)
+    implementation(libs.play.services.location)
+    implementation(libs.places.sdk)
+    implementation(libs.android.maps.utils)
+    implementation(libs.maps.compose)
+
+    // Hilt + navegación
     implementation(libs.hilt.android)
-    implementation(libs.androidx.room.compiler)
     ksp(libs.hilt.compiler)
     implementation(libs.androidx.hilt.navigation.compose)
 
-    // CommonMark para convertir Markdown a HTML
+    // Room
+    implementation(libs.androidx.room.common.jvm)
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx)
+    ksp(libs.androidx.room.compiler)
+
+    // Imagen (Coil)
+    implementation(libs.coil.compose)
+    implementation(libs.coil.network.okhttp)
+
+    // Accompanist (barra de estado/navigation bar)
+    implementation(libs.accompanist.systemuicontroller)
+
+    // Markdown
     implementation(libs.commonmark)
 
-    // Testing
+    // Tests
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -127,27 +157,4 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
-
-    implementation(platform(libs.firebase.bom))
-    implementation(libs.firebase.analytics)
-    implementation(libs.androidx.compose.animation)
-    implementation(libs.androidx.compose.ui.text)
-    implementation(libs.places.sdk)
-    implementation(libs.material)
-
-    // Accompanist: para controlar color de status & navigation bar
-    implementation(libs.accompanist.systemuicontroller)
-
-    implementation(libs.play.services.maps)
-    implementation(libs.play.services.location)
-    implementation(libs.android.maps.utils)
-    implementation(libs.maps.compose)
-    implementation(libs.material3)
-    implementation(libs.androidx.material3.window.size.class1)
-    implementation(libs.androidx.material3.adaptive.navigation.suite)
-    implementation(libs.androidx.material)
-    implementation(libs.coil.compose)
-    implementation(libs.coil.network.okhttp)
-    implementation(libs.androidx.material3.window.size.class1.v140alpha15)
-    implementation(libs.androidx.material3.adaptive.navigation.suite)
 }

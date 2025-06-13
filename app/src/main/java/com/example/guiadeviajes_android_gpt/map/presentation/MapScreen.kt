@@ -14,25 +14,26 @@ import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil3.compose.AsyncImage
 import com.example.guiadeviajes_android_gpt.BuildConfig
 import com.example.guiadeviajes_android_gpt.R
 import com.example.guiadeviajes_android_gpt.home.presentation.components.HomeTopAppBar
+import com.example.guiadeviajes_android_gpt.map.util.getColorForCategory
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.*
 import com.google.maps.android.compose.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import androidx.core.net.toUri
-import com.example.guiadeviajes_android_gpt.map.util.getColorForCategory
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -44,17 +45,18 @@ fun MapScreen(
 ) {
     val context = LocalContext.current
 
-    // 1) UI State
     var locationQuery by remember { mutableStateOf("") }
-    var isSearching   by remember { mutableStateOf(false) }
+    var isSearching by remember { mutableStateOf(false) }
     var initialChecked by remember { mutableStateOf(false) }
+    val snackbarHostState = remember { SnackbarHostState() }
 
-    // 2) Location Permission
     val hasPerm = ContextCompat.checkSelfPermission(
         context, Manifest.permission.ACCESS_FINE_LOCATION
     ) == PackageManager.PERMISSION_GRANTED
-    val permLauncher =
-        rememberLauncherForActivityResult(RequestPermission()) { if (it) viewModel.onLocationPermissionGranted() }
+    val permLauncher = rememberLauncherForActivityResult(RequestPermission()) {
+        if (it) viewModel.onLocationPermissionGranted()
+    }
+
     LaunchedEffect(hasPerm) {
         if (!initialChecked) {
             initialChecked = true
@@ -62,34 +64,34 @@ fun MapScreen(
             else permLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
         }
     }
-    val permissionGranted by viewModel.hasLocationPermission.collectAsState()
 
-    // 3) Dark style JSON
+    val permissionGranted by viewModel.hasLocationPermission.collectAsState()
+    val searchCount by viewModel.searchCount.collectAsState()
+    val maxSearches = remember { 10 }
+
     val mapStyleJson = remember {
         context.resources.openRawResource(R.raw.dark_map_style)
             .bufferedReader().use { it.readText() }
     }
 
-    // 4) Camera State
     val cameraState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(LatLng(40.4168, -3.7038), 13f)
     }
+
     viewModel.cameraState = cameraState
 
-    // 5) Data from VM
     val interests = viewModel.allInterests
     val selectedKeys by viewModel.selectedInterests.collectAsState()
     val places by viewModel.places.collectAsState()
     val detail by viewModel.selectedDetail.collectAsState()
 
-    // 6) BottomSheetScaffold state (Material3)
-    val sheetState = rememberBottomSheetScaffoldState()   // <<< sin parámetros
+    val sheetState = rememberBottomSheetScaffoldState()
     val sheetScope = rememberCoroutineScope()
 
     BottomSheetScaffold(
-        scaffoldState   = sheetState,
+        scaffoldState = sheetState,
         sheetPeekHeight = 0.dp,
-        sheetContent    = {
+        sheetContent = {
             detail?.let { d ->
                 Column(Modifier.padding(16.dp)) {
                     IconButton(onClick = { sheetScope.launch { sheetState.bottomSheetState.hide() } }) {
@@ -98,14 +100,14 @@ fun MapScreen(
                     Spacer(Modifier.height(8.dp))
                     Text(d.name, fontSize = 20.sp, style = MaterialTheme.typography.titleLarge)
                     Spacer(Modifier.height(4.dp))
-                    d.address?.let    { Text(it, style = MaterialTheme.typography.bodyMedium) }
-                    d.phoneNumber?.let{
+                    d.address?.let { Text(it, style = MaterialTheme.typography.bodyMedium) }
+                    d.phoneNumber?.let {
                         Spacer(Modifier.height(4.dp))
-                        Text("📞 $it", style = MaterialTheme.typography.bodyMedium)
+                        Text("\uD83D\uDCDE $it", style = MaterialTheme.typography.bodyMedium)
                     }
-                    d.website?.let    {
+                    d.website?.let {
                         Spacer(Modifier.height(4.dp))
-                        Text("🌐 $it", style = MaterialTheme.typography.bodyMedium)
+                        Text("\uD83C\uDF10 $it", style = MaterialTheme.typography.bodyMedium)
                     }
                     Spacer(Modifier.height(12.dp))
                     Text("Fotos", style = MaterialTheme.typography.titleMedium)
@@ -117,23 +119,17 @@ fun MapScreen(
                             AsyncImage(
                                 model = url,
                                 contentDescription = null,
-                                modifier = Modifier
-                                    .size(120.dp)
-                                    .padding(end = 8.dp)
+                                modifier = Modifier.size(120.dp).padding(end = 8.dp)
                             )
                         }
                     }
                     Spacer(Modifier.height(12.dp))
                     Button(
                         onClick = {
-                            d.position.let { pos ->
-                                val uri =
-                                    "geo:${pos.latitude},${pos.longitude}?q=${Uri.encode(d.name)}".toUri()
-                                context.startActivity(
-                                    Intent(Intent.ACTION_VIEW, uri)
-                                        .apply { setPackage("com.google.android.apps.maps") }
-                                )
-                            }
+                            val uri = "geo:${d.position.latitude},${d.position.longitude}?q=${Uri.encode(d.name)}".toUri()
+                            context.startActivity(Intent(Intent.ACTION_VIEW, uri).apply {
+                                setPackage("com.google.android.apps.maps")
+                            })
                         },
                         modifier = Modifier.fillMaxWidth()
                     ) {
@@ -144,47 +140,64 @@ fun MapScreen(
         },
         topBar = {
             HomeTopAppBar(
-                userName    = viewModel.userName,
-                userTokens  = viewModel.userTokens,
+                userName = viewModel.userName,
+                userTokens = viewModel.userTokens,
                 onMenuClick = { scope.launch { drawerState.open() } }
             )
         },
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         containerColor = MaterialTheme.colorScheme.background
     ) { paddingValues ->
         Column(
-            Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
+            Modifier.fillMaxSize().padding(paddingValues)
         ) {
-            // Search field
+            var lastQuery by remember { mutableStateOf("") }
+
             OutlinedTextField(
                 value = locationQuery,
                 onValueChange = { locationQuery = it },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(8.dp),
+                modifier = Modifier.fillMaxWidth().padding(8.dp),
                 label = { Text("Buscar ubicación") },
                 trailingIcon = {
-                    IconButton(onClick = {
-                        if (locationQuery.isNotBlank()) {
-                            isSearching = true
-                            viewModel.geocodeAndFetch(locationQuery) { center ->
-                                scope.launch {
-                                    cameraState.animate(
-                                        update = CameraUpdateFactory.newLatLngZoom(center, 13f)
-                                    )
+                    IconButton(
+                        onClick = {
+                            if (locationQuery.isNotBlank() && locationQuery != lastQuery) {
+                                if (searchCount < maxSearches) {
+                                    isSearching = true
+                                    lastQuery = locationQuery
+                                    viewModel.geocodeAndFetch(locationQuery) { center ->
+                                        scope.launch {
+                                            cameraState.animate(CameraUpdateFactory.newLatLngZoom(center, 13f))
+                                            val radius = 1000
+                                            viewModel.fetchPlaces(center = center, radius = radius)
+                                        }
+                                        isSearching = false
+                                    }
+                                } else {
+                                    scope.launch {
+                                        snackbarHostState.showSnackbar("Límite de búsquedas alcanzado.")
+                                    }
                                 }
-                                isSearching = false
                             }
-                        }
-                    }) {
+                        },
+                        enabled = !isSearching
+                    ) {
                         Icon(Icons.Default.Search, contentDescription = "Buscar")
                     }
                 }
             )
-            if (isSearching) LinearProgressIndicator(Modifier.fillMaxWidth())
 
-            // Filter chips
+            if (isSearching) {
+                LinearProgressIndicator(Modifier.fillMaxWidth())
+            }
+
+            Text(
+                text = "Búsquedas realizadas: $searchCount / $maxSearches",
+                modifier = Modifier.padding(start = 12.dp, bottom = 4.dp),
+                style = MaterialTheme.typography.bodySmall,
+                color = Color.Gray
+            )
+
             LazyRow(Modifier.padding(8.dp)) {
                 items(interests) { interest ->
                     val chipColor = getColorForCategory(interest.label)
@@ -203,41 +216,43 @@ fun MapScreen(
                 }
             }
 
-            // Map
             Box(Modifier.weight(1f)) {
                 if (permissionGranted) {
                     GoogleMap(
-                        modifier             = Modifier.fillMaxSize(),
-                        cameraPositionState  = cameraState,
-                        properties           = MapProperties(
+                        modifier = Modifier.fillMaxSize(),
+                        cameraPositionState = cameraState,
+                        properties = MapProperties(
                             isMyLocationEnabled = true,
-                            mapStyleOptions     = MapStyleOptions(mapStyleJson)
+                            mapStyleOptions = MapStyleOptions(mapStyleJson),
+                            mapType = MapType.NORMAL
                         ),
-                        uiSettings           = MapUiSettings(myLocationButtonEnabled = true)
+                        uiSettings = MapUiSettings(
+                            zoomControlsEnabled = true,
+                            myLocationButtonEnabled = true,
+                            zoomGesturesEnabled = true,
+                            scrollGesturesEnabled = true,
+                            tiltGesturesEnabled = true
+                        )
                     ) {
                         places.forEach { item ->
                             Marker(
                                 state = MarkerState(item.position),
                                 title = item.name,
                                 snippet = buildString {
-                                    item.address?.let    { appendLine(it) }
-                                    item.phoneNumber?.let{ appendLine("Tel: $it") }
-                                    item.website?.let    { appendLine("Web: $it") }
+                                    item.address?.let { appendLine(it) }
+                                    item.phoneNumber?.let { appendLine("Tel: $it") }
+                                    item.website?.let { appendLine("Web: $it") }
                                 }.trim().ifBlank { null },
                                 icon = BitmapDescriptorFactory.defaultMarker(
                                     when (item.category) {
                                         "Hospitales Vet." -> BitmapDescriptorFactory.HUE_RED
-                                        "Veterinarios"    -> BitmapDescriptorFactory.HUE_ROSE
-                                        "Museos", "Monumentos" ->
-                                            BitmapDescriptorFactory.HUE_VIOLET
-                                        "Parques","Pipican / Zona Paseo","Zonas Paseo" ->
-                                            BitmapDescriptorFactory.HUE_GREEN
-                                        "Playas"          -> BitmapDescriptorFactory.HUE_ORANGE
-                                        "Restaurantes"    -> BitmapDescriptorFactory.HUE_AZURE
-                                        "Hoteles","Campings" ->
-                                            BitmapDescriptorFactory.HUE_BLUE
-                                        "Peluquerías","Tiendas de Piensos" ->
-                                            BitmapDescriptorFactory.HUE_YELLOW
+                                        "Veterinarios" -> BitmapDescriptorFactory.HUE_ROSE
+                                        "Museos", "Monumentos" -> BitmapDescriptorFactory.HUE_VIOLET
+                                        "Parques", "Pipican / Zona Paseo", "Zonas Paseo" -> BitmapDescriptorFactory.HUE_GREEN
+                                        "Playas" -> BitmapDescriptorFactory.HUE_ORANGE
+                                        "Restaurantes" -> BitmapDescriptorFactory.HUE_AZURE
+                                        "Hoteles", "Campings" -> BitmapDescriptorFactory.HUE_BLUE
+                                        "Peluquerías", "Tiendas de Piensos" -> BitmapDescriptorFactory.HUE_YELLOW
                                         else -> BitmapDescriptorFactory.HUE_VIOLET
                                     }
                                 ),
@@ -248,6 +263,41 @@ fun MapScreen(
                                 }
                             )
                         }
+                    }
+
+                    if (searchCount < maxSearches) {
+                        Button(
+                            onClick = {
+                                val bounds = cameraState.projection?.visibleRegion?.latLngBounds
+                                if (bounds != null) {
+                                    val center = bounds.center
+                                    val farCorner = bounds.northeast
+                                    val radius = viewModel.calculateVisibleRadius(center, farCorner)
+                                    if (radius <= 3000) {
+                                        viewModel.fetchPlaces(center = center, radius = radius)
+                                    } else {
+                                        scope.launch {
+                                            snackbarHostState.showSnackbar(
+                                                message = "Área demasiado grande. Reduce el zoom para buscar."
+                                            )
+                                        }
+                                    }
+                                }
+                            },
+                            modifier = Modifier
+                                .align(Alignment.BottomCenter)
+                                .padding(16.dp)
+                        ) {
+                            Text("Buscar en esta zona")
+                        }
+                    } else {
+                        Text(
+                            "Límite de búsquedas alcanzado.",
+                            color = Color.Red,
+                            modifier = Modifier
+                                .align(Alignment.BottomCenter)
+                                .padding(16.dp)
+                        )
                     }
                 } else {
                     Text("Permiso de ubicación necesario", Modifier.padding(16.dp))

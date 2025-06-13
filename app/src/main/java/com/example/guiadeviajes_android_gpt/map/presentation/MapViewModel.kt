@@ -2,21 +2,20 @@ package com.example.guiadeviajes_android_gpt.map.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.guiadeviajes_android_gpt.home.data.remote.dto.SimplePlaceResult
 import com.example.guiadeviajes_android_gpt.home.data.remote.dto.response.PlaceSearchResult
 import com.example.guiadeviajes_android_gpt.home.data.remote.dto.response.PlacesSearchResponse
 import com.example.guiadeviajes_android_gpt.home.data.repository.GooglePlacesRepository
+import com.example.guiadeviajes_android_gpt.map.core.database.CachedPlace
+import com.example.guiadeviajes_android_gpt.map.core.database.CachedPlaceDao
 import com.example.guiadeviajes_android_gpt.map.dto.PetInterest
 import com.google.android.gms.maps.model.LatLng
+import com.google.maps.android.SphericalUtil
 import com.google.maps.android.compose.CameraPositionState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-/**
- * Representa un interés seleccionable por el usuario.
- */
 data class Interest(
     val key: String,
     val label: String,
@@ -26,25 +25,21 @@ data class Interest(
 
 @HiltViewModel
 class MapViewModel @Inject constructor(
-    private val placesRepo: GooglePlacesRepository
+    private val placesRepo: GooglePlacesRepository,
+    private val cachedPlaceDao: CachedPlaceDao
 ) : ViewModel() {
 
-    // ── TopBar ───────────────────────────────────────────
     val userName: String = "Usuario Demo"
     val userTokens: Int = 42
 
-    // Cámara Compose (se asigna desde MapScreen)
     lateinit var cameraState: CameraPositionState
 
-    // ── Permiso de ubicación ─────────────────────────────
     private val _hasLocationPermission = MutableStateFlow(false)
     val hasLocationPermission: StateFlow<Boolean> = _hasLocationPermission.asStateFlow()
     fun onLocationPermissionGranted() {
         _hasLocationPermission.value = true
-        fetchPlaces()
     }
 
-    // ── Intereses ────────────────────────────────────────
     val allInterests = listOf(
         Interest("museums",     "Museos",             "museum"),
         Interest("restaurants", "Restaurantes",       "restaurant",   keyword = "pet"),
@@ -62,7 +57,9 @@ class MapViewModel @Inject constructor(
         Interest("petStores",   "Tiendas de Piensos", "pet_store")
     )
 
-    private val _selectedInterests = MutableStateFlow(allInterests.map { it.key }.toSet())
+    private val _selectedInterests = MutableStateFlow(
+        setOf("hospitals", "vets", "parks", "walking")
+    )
     val selectedInterests: StateFlow<Set<String>> = _selectedInterests.asStateFlow()
     fun toggleInterest(key: String) {
         _selectedInterests.update { curr ->
@@ -70,80 +67,108 @@ class MapViewModel @Inject constructor(
                 if (!it.remove(key)) it += key
             }
         }
-        fetchPlaces()
     }
 
-    // ── Marcadores ────────────────────────────────────────
     private val _places = MutableStateFlow<List<PetInterest>>(emptyList())
     val places: StateFlow<List<PetInterest>> = _places.asStateFlow()
 
-    /**
-     * Hace Nearby Search para cada interés y mapea a PetInterest
-     * incluyendo dirección, teléfono y web desde SimplePlaceResult.
-     */
-    private fun fetchPlaces(
-        center: LatLng = LatLng(40.4168, -3.7038),
-        radius: Int = 2000
-    ) {
-        viewModelScope.launch {
-            val combined = selectedInterests.value.flatMap { key ->
-                val interest = allInterests.first { it.key == key }
-                val resp: PlacesSearchResponse = placesRepo.getNearbyRaw(
-                    lat     = center.latitude,
-                    lng     = center.longitude,
-                    radius  = radius,
-                    type    = interest.type,
-                    keyword = interest.keyword
-                )
-                resp.results.mapNotNull { place: PlaceSearchResult ->
-                    // mapeo de Nearby
-                    val lat = place.geometry.location.lat
-                    val lng = place.geometry.location.lng
-                    // pedimos detalles simplificados (SimplePlaceResult) desde el repositorio
-                    val detail: SimplePlaceResult? =
-                        placesRepo.getPlaceDetails(place.place_id)
-                    detail?.let {
-                        PetInterest(
-                            id          = place.place_id,
-                            name        = place.name,
-                            position    = LatLng(lat, lng),
-                            category    = interest.label,
-                            address     = it.address,
-                            phoneNumber = it.phoneNumber,
-                            website     = it.website
-                        )
-                    }
-                }
-            }
-            _places.value = combined
-        }
-    }
-
-    // ── Detalles seleccionados (para info nativa o futura UI) ───
     private val _selectedDetail = MutableStateFlow<PetInterest?>(null)
     val selectedDetail: StateFlow<PetInterest?> = _selectedDetail.asStateFlow()
 
-    /**
-     * Al pinchar un marcador simplemente guardamos el PetInterest
-     * para usar su snippet (o más adelante un panel Compose).
-     */
     fun selectPlace(place: PetInterest) {
         _selectedDetail.value = place
     }
 
-    /**
-     * Geocodifica texto a LatLng y recarga marcadores centrados ahí.
-     */
-    fun geocodeAndFetch(
-        query: String,
-        onCenter: (LatLng) -> Unit
-    ) {
+    private val _searchCount = MutableStateFlow(0)
+    val searchCount: StateFlow<Int> = _searchCount.asStateFlow()
+    private val maxSearchesPerSession = 10
+
+    fun geocodeAndFetch(query: String, onCenter: (LatLng) -> Unit) {
         viewModelScope.launch {
+            if (_searchCount.value >= maxSearchesPerSession) return@launch
             placesRepo.geocodeAddress(query)?.let { (lat, lng) ->
                 val newCenter = LatLng(lat, lng)
                 onCenter(newCenter)
-                fetchPlaces(center = newCenter)
+                _searchCount.update { it + 1 }
             }
         }
+    }
+
+    fun fetchPlaces(center: LatLng, radius: Int = 1500, maxCategories: Int = 4) {
+        viewModelScope.launch {
+            if (_searchCount.value >= maxSearchesPerSession) return@launch
+
+            val selectedLimited = selectedInterests.value.take(maxCategories)
+
+            val cachedResults = selectedLimited.flatMap { key ->
+                cachedPlaceDao.getPlacesForInterest(key).map {
+                    PetInterest(
+                        id = it.placeId,
+                        name = it.name,
+                        position = LatLng(it.lat, it.lng),
+                        category = it.category,
+                        address = it.address,
+                        phoneNumber = it.phoneNumber,
+                        website = it.website
+                    )
+                }
+            }
+
+            if (cachedResults.isNotEmpty()) {
+                _places.value = cachedResults
+                return@launch
+            }
+
+            val combined = selectedLimited.flatMap { key ->
+                val interest = allInterests.firstOrNull { it.key == key } ?: return@flatMap emptyList()
+                val response: PlacesSearchResponse = placesRepo.getNearbyRaw(
+                    lat = center.latitude,
+                    lng = center.longitude,
+                    radius = radius,
+                    type = interest.type,
+                    keyword = interest.keyword
+                )
+
+                // Limitar a 5 lugares por categoría
+                response.results.take(5).map { place: PlaceSearchResult ->
+                    val lat = place.geometry.location.lat
+                    val lng = place.geometry.location.lng
+                    val details = placesRepo.getPlaceDetails(place.place_id)
+
+                    PetInterest(
+                        id = place.place_id,
+                        name = place.name,
+                        position = LatLng(lat, lng),
+                        category = interest.label,
+                        address = details?.address ?: "Dirección desconocida",
+                        phoneNumber = details?.phoneNumber,
+                        website = details?.website,
+                        photos = details?.photos ?: emptyList()
+                    )
+                }
+            }
+
+            _places.value = combined
+            _searchCount.update { it + 1 }
+
+            val toCache = combined.map {
+                CachedPlace(
+                    placeId = it.id,
+                    interestKey = allInterests.first { i -> i.label == it.category }.key,
+                    name = it.name,
+                    lat = it.position.latitude,
+                    lng = it.position.longitude,
+                    category = it.category,
+                    address = it.address,
+                    phoneNumber = it.phoneNumber,
+                    website = it.website
+                )
+            }
+            cachedPlaceDao.insertAll(toCache)
+        }
+    }
+
+    fun calculateVisibleRadius(center: LatLng, farCorner: LatLng): Int {
+        return SphericalUtil.computeDistanceBetween(center, farCorner).toInt()
     }
 }
