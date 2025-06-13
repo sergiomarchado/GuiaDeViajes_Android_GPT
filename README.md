@@ -21,7 +21,7 @@ Ofrece búsquedas geolocalizadas, filtros inteligentes, caché local y visualiza
 
 ## 🎬 Demo en vídeo
 
-[![Demo de la app](https://img.youtube.com/vi/MD548YvtCis/0.jpg)](https://youtu.be/MD548YvtCis)
+[![Demo de la app](https://img.youtube.com/vi/bxl1MVW5XJs/0.jpg)](https://youtu.be/bxl1MVW5XJs)
 
 ---
 
