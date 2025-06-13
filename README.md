@@ -158,4 +158,7 @@ API_KEYG=...
 
 ## 📄 Licencia
 
-MIT © \[Tu Nombre o Alias]
+Este proyecto está protegido bajo la licencia [CC BY-NC-ND 4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/).  
+No se permite el uso comercial ni la modificación del código sin autorización.
+
+© 2025 Sergio Marchado Ropero. PET EXPLORER. GuiaDeViajes_Android_GPT. Todos los derechos reservados.
