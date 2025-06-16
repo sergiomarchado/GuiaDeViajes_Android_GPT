@@ -13,7 +13,7 @@ Ofrece búsquedas geolocalizadas, filtros inteligentes, caché local y visualiza
 * 🔎 Resultados detallados: dirección, teléfono, web y fotos
 * 💾 Caché local con Room para minimizar llamadas a la API y reducir costes
 * 📷 Carga dinámica de imágenes desde Google Places
-* 📍 Apertura directa del lugar en Google Maps
+* 📍 Apertura directa de la información del lugar con Google Maps, llamada o web.
 * 🧭 Navegación con filtros personalizables
 * 🧠 Recomendaciones enriquecidas mediante IA
 
@@ -126,6 +126,18 @@ fun fetchPlaces(center: LatLng, radius: Int = 1500)
 Esto evita múltiples llamadas a la API innecesarias, reduce costes y mejora la velocidad de carga.
 
 ---
+
+## 🧪 Futuras implementaciones
+
+* ✨ Sección de promociones con botón para copiar el código promocional.
+* 🗺️ Mejora del rendimiento del mapa y clustering de marcadores.
+* 🧱 Refactorización de la arquitectura para facilitar testing, modularización y futura ofuscación del código.
+* 🔐 Gestión avanzada de las API keys mediante backend propio con autenticación y encriptación.
+* 🧭 Recomendaciones basadas en historial de búsqueda o intereses guardados.
+* 🌍 Multilenguaje dinámico con soporte para idiomas adicionales.
+
+---
+
 
 ## 📦 Instalación
 
