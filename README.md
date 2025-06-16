@@ -144,15 +144,6 @@ API_KEYG=...
 
 3. Abre el proyecto en Android Studio y ejecútalo ✅
 
----
-
-## ✅ TODOs
-
-* Soporte offline real
-* Agregar favoritos
-* Intereses recomendados por IA (ChatGPT)
-* Modo oscuro automático
-* Localización multilenguaje
 
 ---
 
