@@ -1,4 +1,3 @@
-
 package com.example.guiadeviajes_android_gpt.navigation
 
 import androidx.annotation.StringRes
@@ -6,38 +5,37 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.example.guiadeviajes_android_gpt.R
+
 /**
- * BottomBarScreen.kt
- *
- * Define las rutas y metadatos de las pantallas accesibles desde la barra inferior de navegación.
- * Cada objeto representa un ítem de la BottomNavigationBar con su ruta, etiqueta y icono.
- *
- * @property route    Cadena única para la navegación Compose (NavHost).
- * @property labelRes Recurso de cadena para la etiqueta de la pestaña.
- * @property icon     Vector del icono a mostrar en la pestaña.
+ * Representa los ítems visibles en la BottomNavigationBar.
+ * Cada ítem está vinculado a un NavRoutes concreto.
  */
 sealed class BottomBarScreen(
-    // Ruta de navegación para NavHost
     val route: String,
-    // Recurso de texto para la etiqueta de la pestaña
     @StringRes val labelRes: Int,
-    // Icono representativo de la pestaña
     val icon: ImageVector
 ) {
-    /**
-     * Pantalla principal Home.
-     */
-    data object Home       : BottomBarScreen("home",       R.string.nav_home,       Icons.Default.Home)
-    /**
-     * Pantalla de mapa.
-     */
-    data object Map        : BottomBarScreen("map",        R.string.nav_map,        Icons.Default.Map)
-    /**
-     * Pantalla de perfil.
-     */
-    data object Profile    : BottomBarScreen("profile",    R.string.nav_profile,    Icons.Default.Person)
-    /**
-     * Pantalla de promociones.
-     */
-    data object Promotions : BottomBarScreen("promotions", R.string.nav_promotions, Icons.Default.LocalOffer)
+    data object Home : BottomBarScreen(
+        route = NavRoutes.Home.route,
+        labelRes = R.string.nav_home,
+        icon = Icons.Default.Home
+    )
+
+    data object Map : BottomBarScreen(
+        route = NavRoutes.Map.route,
+        labelRes = R.string.nav_map,
+        icon = Icons.Default.Map
+    )
+
+    data object Profile : BottomBarScreen(
+        route = NavRoutes.Profile.route,
+        labelRes = R.string.nav_profile,
+        icon = Icons.Default.Person
+    )
+
+    data object Promotions : BottomBarScreen(
+        route = NavRoutes.Promotions.route,
+        labelRes = R.string.nav_promotions,
+        icon = Icons.Default.LocalOffer
+    )
 }

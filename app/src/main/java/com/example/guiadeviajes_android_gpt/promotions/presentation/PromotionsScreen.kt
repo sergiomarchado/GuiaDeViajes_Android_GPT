@@ -11,6 +11,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DrawerState
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -40,6 +41,7 @@ import kotlinx.coroutines.launch
  * - Al tocar, abre un AlertDialog con todas las ofertas (code + terms).
  */
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PromotionsScreen(
     navController: NavController,

@@ -28,7 +28,10 @@ import com.google.accompanist.systemuicontroller.rememberSystemUiController
 private val DarkColorScheme = darkColorScheme(
     primary   = Color(0xFF011A30),
     secondary = PurpleGrey80,
-    tertiary  = Pink80
+    tertiary  = Pink80,
+    background = DarkBlue,
+    surfaceVariant = LightBlue,
+    secondaryContainer = LightBlue2
 )
 
 /**
@@ -37,7 +40,11 @@ private val DarkColorScheme = darkColorScheme(
 private val LightColorScheme = lightColorScheme(
     primary   = Color(0xFF011A30),
     secondary = PurpleGrey40,
-    tertiary  = Pink40
+    tertiary  = Pink40,
+    surfaceVariant = LightBlueL,
+    secondaryContainer = LightBlue2L,
+    errorContainer = RedErrorL
+
 )
 
 /**
@@ -55,7 +62,7 @@ private val LightColorScheme = lightColorScheme(
 @Composable
 fun GuiaDeViajes_Android_GPTTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    dynamicColor: Boolean = true,
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
     // 1) Selección del esquema de color

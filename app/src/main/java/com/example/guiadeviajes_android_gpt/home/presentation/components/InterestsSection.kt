@@ -1,28 +1,42 @@
 package com.example.guiadeviajes_android_gpt.home.presentation.components
-/**
- * InterestsSection.kt
- *
- * Composable que muestra una sección de intereses organizada en tres filas:
- * 1) Sitios emblemáticos
- * 2) Experiencias al aire libre y alojamiento
- * 3) Servicios para mascotas
- *
- * Cada fila utiliza un LazyRow para mostrar múltiples elementos seleccionables.
- *
- */
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.DirectionsWalk
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
+import androidx.compose.material.icons.filled.BeachAccess
+import androidx.compose.material.icons.filled.ContentCut
+import androidx.compose.material.icons.filled.Cottage
+import androidx.compose.material.icons.filled.Forest
+import androidx.compose.material.icons.filled.Healing
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Hotel
+import androidx.compose.material.icons.filled.LocalHospital
+import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Museum
+import androidx.compose.material.icons.filled.Pets
+import androidx.compose.material.icons.filled.Restaurant
+import androidx.compose.material.icons.filled.Store
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -61,133 +75,132 @@ fun InterestsSection(
     petStoresChecked: Boolean,
     onPetStoresCheckedChange: (Boolean) -> Unit
 ) {
-    // 1) Encabezado y elementos de "Sitios emblemáticos"
-    Text(
-        text = "Explora lo más típico:",
-        fontSize = 14.sp,
-        fontWeight = FontWeight.Medium,
-        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
-        modifier = Modifier.padding(bottom = 8.dp)
-    )
-    // Lista de tuplas (item, icono) para sitios emblemáticos
-    val emblematicItems = listOf(
-        Triple("Museos", museumsChecked, onMuseumsCheckedChange) to Icons.Default.Museum,
-        Triple("Restaurantes", restaurantsChecked, onRestaurantsCheckedChange) to Icons.Default.Restaurant,
-        Triple("Monumentos", landmarksChecked, onLandmarksCheckedChange) to Icons.Default.LocationOn
-    )
-    LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        items(emblematicItems) { (item, icon) ->
-            // Desempaquetar los valores de cada interest
-            val (label, isChecked, onCheckedChange) = item
-            InterestItem(label, isChecked, onCheckedChange, icon)
+    // 1) Sitios emblemáticos
+    SectionHeader("Explora lo más típico:")
+    LazyRow(
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        contentPadding = PaddingValues(horizontal = 2.dp)
+    ) {
+        items(
+            listOf(
+                Triple("Museos", museumsChecked, onMuseumsCheckedChange) to Icons.Default.Museum,
+                Triple("Restaurantes", restaurantsChecked, onRestaurantsCheckedChange) to Icons.Default.Restaurant,
+                Triple("Monumentos", landmarksChecked, onLandmarksCheckedChange) to Icons.Default.LocationOn
+            )
+        ) { (item, icon) ->
+            InterestCard(label = item.first, isSelected = item.second, onToggle = item.third, icon = icon)
         }
     }
 
-    Spacer(modifier = Modifier.height(16.dp))
+    Spacer(Modifier.height(16.dp))
 
-    // 2) Encabezado y elementos de "Experiencias outdoor y alojamiento"
-    Text(
-        text = "Al aire libre y hospedaje:",
-        fontSize = 14.sp,
-        fontWeight = FontWeight.Medium,
-        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
-        modifier = Modifier.padding(bottom = 8.dp)
-    )
-    val outdoorItems = listOf(
-        Triple("Parques naturales", parksChecked, onParksCheckedChange) to Icons.Default.Forest,
-        Triple("Playas perros", beachesChecked, onBeachesCheckedChange) to Icons.Default.BeachAccess,
-        Triple("Hoteles", hotelsChecked, onHotelsCheckedChange) to Icons.Default.Hotel,
-        Triple("Campings", campingsChecked, onCampingsCheckedChange) to Icons.Default.Cottage,
-        Triple("Pipican", pipicanChecked, onPipicanCheckedChange) to Icons.Default.Pets,
-        Triple("Zonas paseo", walkingZonesChecked, onWalkingZonesCheckedChange) to Icons.AutoMirrored.Filled.DirectionsWalk
-    )
-    LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        items(outdoorItems) { (item, icon) ->
-            val (label, isChecked, onCheckedChange) = item
-            InterestItem(label, isChecked, onCheckedChange, icon)
+    // 2) Outdoor + hospedaje
+    SectionHeader("Al aire libre y hospedaje:")
+    LazyRow(
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        contentPadding = PaddingValues(horizontal = 2.dp)
+    ) {
+        items(
+            listOf(
+                Triple("Parques naturales", parksChecked, onParksCheckedChange) to Icons.Default.Forest,
+                Triple("Playas perros", beachesChecked, onBeachesCheckedChange) to Icons.Default.BeachAccess,
+                Triple("Hoteles", hotelsChecked, onHotelsCheckedChange) to Icons.Default.Hotel,
+                Triple("Campings", campingsChecked, onCampingsCheckedChange) to Icons.Default.Cottage,
+                Triple("Pipican", pipicanChecked, onPipicanCheckedChange) to Icons.Default.Pets,
+                Triple("Zonas paseo", walkingZonesChecked, onWalkingZonesCheckedChange) to Icons.AutoMirrored.Filled.DirectionsWalk
+            )
+        ) { (item, icon) ->
+            InterestCard(label = item.first, isSelected = item.second, onToggle = item.third, icon = icon)
         }
     }
 
-    Spacer(modifier = Modifier.height(16.dp))
+    Spacer(Modifier.height(16.dp))
 
-    // 3) Encabezado y elementos de "Servicios para tu mascota"
-    Text(
+    // 3) Servicios mascota
+    SectionHeader(
         text = "Servicios para tu mascota:",
-        fontSize = 14.sp,
-        fontWeight = FontWeight.Medium,
-        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f),
-        modifier = Modifier.padding(bottom = 8.dp)
+        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.85f)
     )
-    val serviceItems = listOf(
-        Triple("Veterinarios", vetsChecked, onVetsCheckedChange) to Icons.Default.LocalHospital,
-        Triple("Hospitales 24h", hospitalsChecked, onHospitalsCheckedChange) to Icons.Default.Healing,
-        Triple("Peluquería canina", groomersChecked, onGroomersCheckedChange) to Icons.Default.ContentCut,
-        Triple("Residencia canina", dogResortsChecked, onDogResortsCheckedChange) to Icons.Default.Home,
-        Triple("Tiendas de piensos", petStoresChecked, onPetStoresCheckedChange) to Icons.Default.Store
-    )
-    LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        items(serviceItems) { (item, icon) ->
-            val (label, isChecked, onCheckedChange) = item
-            InterestItem(label, isChecked, onCheckedChange, icon)
+    LazyRow(
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        contentPadding = PaddingValues(horizontal = 2.dp)
+    ) {
+        items(
+            listOf(
+                Triple("Veterinarios", vetsChecked, onVetsCheckedChange) to Icons.Default.LocalHospital,
+                Triple("Hospitales 24h", hospitalsChecked, onHospitalsCheckedChange) to Icons.Default.Healing,
+                Triple("Peluquería canina", groomersChecked, onGroomersCheckedChange) to Icons.Default.ContentCut,
+                Triple("Residencia canina", dogResortsChecked, onDogResortsCheckedChange) to Icons.Default.Home,
+                Triple("Tiendas de piensos", petStoresChecked, onPetStoresCheckedChange) to Icons.Default.Store
+            )
+        ) { (item, icon) ->
+            val critical = item.first in listOf("Veterinarios", "Hospitales 24h")
+            InterestCard(
+                label = item.first,
+                isSelected = item.second,
+                onToggle = item.third,
+                icon = icon,
+                critical = critical
+            )
         }
     }
 }
 
-/**
- * InterestItem.kt
- *
- * Elemento individual de interés: icono y etiqueta.
- * Se muestra dentro de un Card clicable que cambia de fondo al seleccionar.
- *
- * @param label Texto descriptivo del interés.
- * @param isSelected Estado de selección.
- * @param onClick Callback que recibe el nuevo estado al hacer clic.
- * @param icon Icono representativo del interés.
- */
 @Composable
-private fun InterestItem(
+private fun SectionHeader(text: String, color: Color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)) {
+    Text(
+        text = text,
+        fontSize = 14.sp,
+        fontWeight = FontWeight.Medium,
+        color = color,
+        modifier = Modifier.padding(bottom = 8.dp)
+    )
+}
+
+@Composable
+private fun InterestCard(
     label: String,
     isSelected: Boolean,
-    onClick: (Boolean) -> Unit,
-    icon: ImageVector
+    onToggle: (Boolean) -> Unit,
+    icon: ImageVector,
+    critical: Boolean = false
 ) {
-    // Definir color de fondo dinámico: rojo para servicios críticos, azul claro para el resto
-    val backgroundColor = when (label) {
-        "Veterinarios", "Hospitales 24h" ->
-            if (isSelected) Color.Red.copy(alpha = 0.6f)
-            else          Color.Red.copy(alpha = 0.15f)
-        else ->
-            if (isSelected) Color(0xFFBBDEFB)  // azul claro
-            else           Color.Transparent
+    // Paleta M3: diferenciamos cards seleccionadas/normal y casos críticos con errorContainer
+    val (container, content) = when {
+        critical && isSelected -> MaterialTheme.colorScheme.errorContainer to MaterialTheme.colorScheme.onErrorContainer
+        critical && !isSelected -> MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.25f) to MaterialTheme.colorScheme.onErrorContainer
+        isSelected -> MaterialTheme.colorScheme.secondaryContainer to MaterialTheme.colorScheme.onSecondaryContainer
+        else -> MaterialTheme.colorScheme.surfaceVariant to MaterialTheme.colorScheme.onSurfaceVariant
     }
 
-    // Card clicable que envuelve icono y etiqueta
     Card(
+        onClick = { onToggle(!isSelected) },
         shape = MaterialTheme.shapes.medium,
-        colors = CardDefaults.cardColors(containerColor = backgroundColor),
+        colors = CardDefaults.cardColors(containerColor = container),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         modifier = Modifier
-            .size(100.dp)
-            .clickable { onClick(!isSelected) }  // Alternar estado al clic
+            .size(width = 120.dp, height = 100.dp)
+            .semantics {
+                selected = isSelected
+            },
+        // Semántica de botón con estado de selección
     ) {
         Column(
             Modifier
                 .fillMaxSize()
-                .padding(8.dp),
+                .padding(10.dp),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Icono centrado en la tarjeta
-            Icon(icon, contentDescription = null, modifier = Modifier.size(24.dp))
-            Spacer(modifier = Modifier.height(4.dp))
-            // Etiqueta de texto con ajuste de línea y estilo
+            Icon(icon, contentDescription = label, tint = content, modifier = Modifier.size(22.dp))
+            Spacer(Modifier.height(6.dp))
             Text(
                 text = label,
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Medium,
                 textAlign = TextAlign.Center,
                 maxLines = 2,
-                color = MaterialTheme.colorScheme.onBackground
+                color = content
             )
         }
     }

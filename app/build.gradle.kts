@@ -21,12 +21,12 @@ configurations.all {
 
 android {
     namespace = "com.example.guiadeviajes_android_gpt"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.example.guiadeviajes_android_gpt"
         minSdk = 26
-        targetSdk = 35
+        targetSdk = 36
         versionCode = 1
         versionName = "1.0"
 
@@ -48,6 +48,9 @@ android {
         val mapsKey = localProperties.getProperty("API_KEYG")
         manifestPlaceholders["com.google.android.geo.API_KEY"] = mapsKey
 
+        buildConfigField(type  = "String", name  = "FIREBASE_DB_URL", value = "\"https://guiaviajesia-default-rtdb.europe-west1.firebasedatabase.app/\"")
+
+
     }
 
     buildTypes {
@@ -67,6 +70,7 @@ android {
 
     kotlinOptions {
         jvmTarget = "11"
+        freeCompilerArgs = listOf("-XXLanguage:+PropertyParamAnnotationDefaultTargetMode")
     }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.15"
@@ -94,11 +98,8 @@ dependencies {
     implementation(libs.androidx.compose.ui.text)
 
     // Material y compatibilidad
-    implementation(libs.material)
-    implementation(libs.androidx.material)
+
     implementation(libs.androidx.material3.window.size.class1)
-    implementation(libs.androidx.material3.window.size.class1.v140alpha15)
-    implementation(libs.androidx.material3.adaptive.navigation.suite)
 
     // Navigation Compose
     implementation(libs.androidx.navigation.compose)
@@ -134,7 +135,6 @@ dependencies {
     implementation(libs.androidx.hilt.navigation.compose)
 
     // Room
-    implementation(libs.androidx.room.common.jvm)
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler)

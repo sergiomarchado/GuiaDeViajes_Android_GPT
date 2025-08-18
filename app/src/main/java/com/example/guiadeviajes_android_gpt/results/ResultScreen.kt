@@ -1,7 +1,5 @@
 package com.example.guiadeviajes_android_gpt.results
 
-import android.util.Log
-import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -10,27 +8,16 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.guiadeviajes_android_gpt.home.presentation.components.MarkdownWebView
-/**
- * ResultScreen.kt
- *
- * Pantalla que muestra los resultados de la búsqueda formateados en Markdown.
- * Se encarga de lanzar la búsqueda al entrar, mostrar loading, errores,
- * renderizar el contenido con MarkdownWebView y permitir guardar resultados.
- *
- * @param navController Controlador de navegación para volver atrás.
- * @param city          Ciudad consultada.
- * @param country       País consultado.
- * @param interests     Cadena con los intereses usados en la búsqueda.
- * @param viewModel     ViewModel que orquesta la búsqueda, formateo y guardado.
- */
+import kotlinx.coroutines.flow.collectLatest
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ResultScreen(
@@ -40,23 +27,21 @@ fun ResultScreen(
     interests: String,
     viewModel: ResultViewModel = hiltViewModel()
 ) {
-    // Contexto para mostrar Toasts
-    val context          = LocalContext.current
+    // Nuevo UiState unificado
+    val state by viewModel.uiState.collectAsState()
+    val isLoading = state.isLoading
+    val markdownText = state.markdown
+    val errorMessage = state.error
 
-    // Observables del ViewModel
-    val isLoading        by viewModel.isLoading.collectAsState()
-    val markdownText     by viewModel.markdownResults.collectAsState()
-    val errorMessage     by viewModel.errorMessage.collectAsState()
-    val saveEvents       = viewModel.saveStatus
-    val snackbarHostState= remember { SnackbarHostState() }
+    val saveEvents = viewModel.saveStatus
+    val snackbarHostState = remember { SnackbarHostState() }
 
-    // Lanzar búsqueda cuando cambien los parámetros de búsqueda
+    // Lanzar búsqueda sólo cuando cambien parámetros (el VM evita relanzar si es la misma)
     LaunchedEffect(city, country, interests) {
-        Log.d("RESULT_SCREEN", "🔍 Búsqueda para ciudad=$city, país=$country, intereses=$interests")
         viewModel.searchPlacesAndFormatMarkdown(interests, city, country)
     }
 
-    // Mostrar errores en Snackbar
+    // Errores → Snackbar
     LaunchedEffect(errorMessage) {
         errorMessage?.let { msg ->
             snackbarHostState.showSnackbar(msg)
@@ -64,39 +49,38 @@ fun ResultScreen(
         }
     }
 
-    // Procesar eventos de guardado: éxito, error o no autenticado
-    LaunchedEffect(saveEvents) {
-        saveEvents.collect { event ->
-            when (event) {
-                is ResultViewModel.SaveEvent.Success -> {
-                    Log.d("RESULT_SCREEN", "✅ Guardado OK, id=${event.id}")
-                    Toast.makeText(context, "Guardado ✅", Toast.LENGTH_SHORT).show()
-                }
-                is ResultViewModel.SaveEvent.Error -> {
-                    Log.e("RESULT_SCREEN", "❌ Error guardando: ${event.message}")
-                    Toast.makeText(context, "Error al guardar ❌ ${event.message}", Toast.LENGTH_SHORT).show()
-                }
-                ResultViewModel.SaveEvent.NotLoggedIn -> {
-                    Log.w("RESULT_SCREEN", "⚠️ Usuario no autenticado")
-                    Toast.makeText(context, "Debes iniciar sesión para guardar", Toast.LENGTH_SHORT).show()
-                }
+    // Eventos de guardado → Snackbar
+    LaunchedEffect(Unit) {
+        saveEvents.collectLatest { event ->
+            val msg = when (event) {
+                is ResultViewModel.SaveEvent.Success  -> "Guardado ✅"
+                is ResultViewModel.SaveEvent.Error    -> "Error al guardar: ${event.message}"
+                ResultViewModel.SaveEvent.NotLoggedIn -> "Debes iniciar sesión para guardar"
             }
+            snackbarHostState.showSnackbar(msg)
         }
     }
 
-    // Estructura de UI
     Scaffold(
+        contentWindowInsets = WindowInsets.systemBars.only(WindowInsetsSides.Top),
         topBar = {
-            TopAppBar(
-                title = { Text("Volver", color = Color.White) },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor    = MaterialTheme.colorScheme.primary.copy(alpha = 0.9f),
-                    titleContentColor = Color.White
+            CenterAlignedTopAppBar(
+                title = {
+                    Text(
+                        text = "Resultados en $city, $country",
+                        color = Color.White
+                    )
+                },
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.95f),
+                    navigationIconContentColor = Color.White,
+                    titleContentColor = Color.White,
+                    actionIconContentColor = Color.White
                 ),
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(
-                            Icons.AutoMirrored.Filled.ArrowBack,
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Volver",
                             tint = Color.White
                         )
@@ -104,78 +88,73 @@ fun ResultScreen(
                 }
             )
         },
-        snackbarHost   = { SnackbarHost(hostState = snackbarHostState) },
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         containerColor = MaterialTheme.colorScheme.background
-    ) { paddingValues ->
+    ) { padding ->
         Column(
-            modifier           = Modifier
+            modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
+                .padding(
+                    start = padding.calculateStartPadding(LayoutDirection.Ltr),
+                    end   = padding.calculateEndPadding(LayoutDirection.Ltr),
+                    top   = padding.calculateTopPadding(),
+                    bottom = 0.dp
+                )
                 .padding(16.dp),
             verticalArrangement = Arrangement.Top
         ) {
-            // Encabezado con título y advertencia
+            // Aviso
             Text(
-                text       = "Resultados en $city, $country",
-                fontSize   = 20.sp,
-                fontWeight = FontWeight.Bold,
-                color      = MaterialTheme.colorScheme.onBackground,
-                modifier   = Modifier.padding(bottom = 8.dp)
-            )
-            // Mensaje de advertencia
-            Text(
-                text      = "⚠️ Recuerda siempre contrastar la admisión de mascotas y sus servicios con el propio lugar.",
-                fontSize  = 12.sp,
-                color     = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
-                modifier  = Modifier.padding(bottom = 16.dp)
+                text = "⚠️ Recuerda contrastar la admisión de mascotas y servicios con el propio lugar.",
+                fontSize = 12.sp,
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
+                modifier = Modifier.padding(bottom = 16.dp)
             )
 
             when {
-                // Mostrar indicador de carga
                 isLoading -> {
                     Box(
-                        modifier         = Modifier.fillMaxSize(),
+                        modifier = Modifier.fillMaxSize(),
                         contentAlignment = Alignment.Center
                     ) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text(
-                                text      = "Estamos trabajando en ofrecerte el mejor resultado…\nUn momento, por favor.",
-                                fontSize  = 16.sp,
-                                color     = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
+                                text = "Estamos preparando tu itinerario…\nUn momento, por favor.",
+                                fontSize = 16.sp,
+                                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
                                 textAlign = TextAlign.Center,
-                                modifier  = Modifier.padding(bottom = 12.dp)
+                                modifier = Modifier.padding(bottom = 12.dp)
                             )
                             CircularProgressIndicator()
                         }
                     }
                 }
 
-                // Mostrar Markdown cuando esté disponible
                 markdownText.isNotBlank() -> {
+                    // Contenido principal con CSS via WebView
                     Box(modifier = Modifier.weight(1f)) {
                         MarkdownWebView(markdown = markdownText)
                     }
-                    Spacer(modifier = Modifier.height(16.dp))
-                    //Botón para guardar resultados en RDB
+                    Spacer(Modifier.height(16.dp))
+
+                    // Guardar resultados
                     Button(
-                        onClick = {
-                            viewModel.saveResults(city, country, interests, markdownText)
-                        },
+                        onClick = { viewModel.saveResults(city, country, interests, markdownText) },
+                        enabled = !isLoading && markdownText.isNotBlank(),
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(48.dp)
                     ) {
-                        Text(text = "Guardar resultados", fontSize = 16.sp)
+                        Text("Guardar resultados", fontSize = 16.sp, fontWeight = FontWeight.Medium)
                     }
                 }
 
-                // Mostrar texto de no resultados
                 else -> {
                     Text(
-                        text      = "No se encontraron resultados para tu búsqueda.",
-                        fontSize  = 16.sp,
-                        color     = MaterialTheme.colorScheme.error,
-                        modifier  = Modifier.padding(top = 24.dp)
+                        text = "No se encontraron resultados para tu búsqueda.",
+                        fontSize = 16.sp,
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.padding(top = 24.dp)
                     )
                 }
             }

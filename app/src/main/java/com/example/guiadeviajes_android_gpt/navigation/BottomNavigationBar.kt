@@ -2,12 +2,7 @@ package com.example.guiadeviajes_android_gpt.navigation
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.NavigationBarItemDefaults
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -17,15 +12,12 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 
 /**
- * BottomNavigationBar.kt
+ * Barra de navegación inferior basada en Material3.
  *
- * Composable que renderiza la barra de navegación inferior en la app.
- * Soporta gestos de navegación y utiliza un color de fondo y contenido personalizados.
- *
- * @param navController  Controlador de navegación para cambiar rutas.
- * @param items          Lista de BottomBarScreen que define rutas, etiquetas e iconos.
- * @param backgroundColor Color de fondo de la barra (por defecto azul oscuro corporativo).
- * @param contentColor    Color de los iconos y texto (por defecto blanco).
+ * @param navController Controlador de navegación.
+ * @param items Lista de pantallas que aparecerán en la barra.
+ * @param backgroundColor Color de fondo de la barra.
+ * @param contentColor Color del contenido (iconos y textos).
  */
 @Composable
 fun BottomNavigationBar(
@@ -34,23 +26,20 @@ fun BottomNavigationBar(
     backgroundColor: Color = Color(0xFF011A30),
     contentColor: Color = Color.White
 ) {
-    // Obtener la ruta actual del BackStack para marcar el item seleccionado
-    val currentRoute = navController.currentBackStackEntryAsState()
-        .value
-        ?.destination
-        ?.route
+    val currentRoute = navController
+        .currentBackStackEntryAsState().value?.destination?.route
 
-    // NavigationBar de Material3 con elevación y padding para la zona de gestos
     NavigationBar(
         modifier = Modifier
-            .fillMaxWidth()            // Ocupa el ancho de la pantalla
-            .navigationBarsPadding(),  // Eleva la barra sobre la barra de gestos
+            .fillMaxWidth()
+            .navigationBarsPadding(),
         containerColor = backgroundColor,
         contentColor = contentColor,
-        tonalElevation = 8.dp         // Sombra suave para destacar la barra
+        tonalElevation = 8.dp
     ) {
-        // Iterar por cada pantalla definida en los items
         items.forEach { screen ->
+            val selected = currentRoute == screen.route
+
             NavigationBarItem(
                 icon = {
                     Icon(
@@ -64,12 +53,13 @@ fun BottomNavigationBar(
                         style = MaterialTheme.typography.labelSmall
                     )
                 },
-                selected = currentRoute == screen.route,
+                selected = selected,
                 onClick = {
-                    if (currentRoute != screen.route) {
+                    if (!selected) {
                         navController.navigate(screen.route) {
-                            // Configuración para preservar el estado de la pila
-                            popUpTo(navController.graph.startDestinationId) { saveState = true }
+                            popUpTo(navController.graph.startDestinationId) {
+                                saveState = true
+                            }
                             launchSingleTop = true
                             restoreState = true
                         }

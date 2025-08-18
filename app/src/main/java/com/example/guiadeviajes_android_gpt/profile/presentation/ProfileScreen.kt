@@ -1,4 +1,5 @@
 package com.example.guiadeviajes_android_gpt.profile.presentation
+
 /**
  * ProfileScreen.kt
  *
@@ -6,6 +7,7 @@ package com.example.guiadeviajes_android_gpt.profile.presentation
  * Se muestran campos de nombre, apellidos, email (solo lectura) y teléfono,
  * junto con un botón para guardar cambios.
  */
+
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -21,7 +23,13 @@ import com.example.guiadeviajes_android_gpt.profile.viewmodel.ProfileViewModel
 import com.example.guiadeviajes_android_gpt.home.presentation.components.HomeTopAppBar
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.only
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalLayoutDirection
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
     navController: NavController,
@@ -29,49 +37,51 @@ fun ProfileScreen(
     scope: CoroutineScope,
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
-    // 1) Observables del ViewModel: perfil, estado de carga y posibles errores
+    // 1) Observables del ViewModel
     val userProfile  by viewModel.userProfile.collectAsState()
     val isLoading    by viewModel.isLoading.collectAsState()
     val errorMessage by viewModel.errorMessage.collectAsState()
 
-    // 2) Estados locales para los campos editables
-    var firstName by remember { mutableStateOf(userProfile.firstName) }
-    var lastName  by remember { mutableStateOf(userProfile.lastName) }
-    var phone     by remember { mutableStateOf(userProfile.phone) }
+    // 2) Estados locales para edición (simple y directo)
+    var firstName by remember(userProfile) { mutableStateOf(userProfile.firstName) }
+    var lastName  by remember(userProfile) { mutableStateOf(userProfile.lastName) }
+    var phone     by remember(userProfile) { mutableStateOf(userProfile.phone) }
 
-    // 3) Habilitar botón Guardar solo cuando haya cambios y no se esté cargando
+    // 3) Validación básica
     val isSaveEnabled = firstName.isNotBlank() && lastName.isNotBlank() && !isLoading
 
-    // 4) Sincronizar campos locales cuando userProfile cambie
-    LaunchedEffect(userProfile) {
-        firstName = userProfile.firstName
-        lastName  = userProfile.lastName
-        phone     = userProfile.phone
-    }
-
-    // 5) Estructura de UI
     Scaffold(
+        contentWindowInsets = WindowInsets.systemBars.only(WindowInsetsSides.Top),
         topBar = {
             HomeTopAppBar(
                 userName    = "${userProfile.firstName} ${userProfile.lastName}",
                 userTokens  = userProfile.tokens,
-                onMenuClick = { scope.launch { drawerState.open() } }
+                onMenuClick = { scope.launch { drawerState.open() } },
+                backgroundColor = Color(0xFF011A30) // mismo color que Home
+                // scrollBehavior = null // opcional, si más adelante quieres colapsable
             )
         },
         containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
+        val layoutDirection = LocalLayoutDirection.current
+
         Column(
             Modifier
                 .fillMaxSize()
-                .verticalScroll(rememberScrollState()) // Permite scroll si el contenido excede
-                .padding(padding)
+                .padding(
+                    start = padding.calculateStartPadding(layoutDirection),
+                    end   = padding.calculateEndPadding(layoutDirection),
+                    top   = padding.calculateTopPadding(),
+                    bottom = 0.dp
+                )
                 .padding(16.dp)
+                .verticalScroll(rememberScrollState())
         ) {
-            // Título de la sección de perfil
+            // Título
             Text("Tu perfil", style = MaterialTheme.typography.titleLarge, fontSize = 22.sp)
             Spacer(Modifier.height(24.dp))
 
-            // Campo Nombre
+            // Nombre
             OutlinedTextField(
                 value = firstName,
                 onValueChange = { firstName = it },
@@ -80,7 +90,7 @@ fun ProfileScreen(
             )
             Spacer(Modifier.height(12.dp))
 
-            // Campo Apellidos
+            // Apellidos
             OutlinedTextField(
                 value = lastName,
                 onValueChange = { lastName = it },
@@ -89,7 +99,7 @@ fun ProfileScreen(
             )
             Spacer(Modifier.height(12.dp))
 
-            // Campo Email (solo lectura)
+            // Email (solo lectura)
             OutlinedTextField(
                 value = userProfile.email,
                 onValueChange = {},
@@ -99,7 +109,7 @@ fun ProfileScreen(
             )
             Spacer(Modifier.height(12.dp))
 
-            // Campo Teléfono
+            // Teléfono
             OutlinedTextField(
                 value = phone,
                 onValueChange = { phone = it },
@@ -108,10 +118,9 @@ fun ProfileScreen(
             )
             Spacer(Modifier.height(24.dp))
 
-            // Botón Guardar cambios
+            // Guardar
             Button(
                 onClick = {
-                    // Invocar actualización en ViewModel
                     viewModel.updateUserProfile(
                         userProfile.copy(
                             firstName = firstName,
@@ -127,12 +136,12 @@ fun ProfileScreen(
             ) {
                 Text("Guardar", fontSize = 16.sp)
             }
-            // Indicador de carga centralizado
+
             if (isLoading) {
                 Spacer(Modifier.height(16.dp))
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
             }
-            // Mostrar mensaje de error en caso necesario
+
             errorMessage?.let { msg ->
                 Spacer(Modifier.height(16.dp))
                 Text(text = msg, color = MaterialTheme.colorScheme.error)

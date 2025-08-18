@@ -1,40 +1,51 @@
 package com.example.guiadeviajes_android_gpt.home.presentation.components
-/**
- * SearchButton.kt
- *
- * Composable que renderiza un botón para iniciar la búsqueda inteligente.
- * Muestra un indicador de progreso si la búsqueda está en curso.
- */
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
 @Composable
 fun SearchButton(
     isLoading: Boolean,
-    onSearch: () -> Unit
+    onSearch: () -> Unit,
+    enabled: Boolean = true,
+    modifier: Modifier = Modifier
 ) {
-    // Botón de acción principal con estilos del tema
     Button(
         onClick = onSearch,
-        modifier = Modifier.fillMaxWidth(),
-        enabled = !isLoading,
+        modifier = modifier,
+        enabled = enabled && !isLoading,
         colors = ButtonDefaults.buttonColors(
             containerColor = MaterialTheme.colorScheme.primary,
             contentColor = MaterialTheme.colorScheme.onPrimary
-        )
+        ),
+        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 14.dp)
     ) {
         if (isLoading) {
-            // Muestra un spinner dentro del botón mientras carga
             CircularProgressIndicator(
-                color = MaterialTheme.colorScheme.onPrimary,
-                modifier = Modifier.size(20.dp)
+                strokeWidth = 2.dp,
+                modifier = Modifier.size(18.dp)
             )
+            Spacer(Modifier.width(8.dp))
+            Text("Buscando…")
         } else {
-            // Texto del botón cuando no carga
-            Text("Búsqueda Inteligente")
+            androidx.compose.material3.Icon(
+                imageVector = Icons.Default.Search,
+                contentDescription = null
+            )
+            Spacer(Modifier.width(8.dp))
+            Text("Búsqueda inteligente")
         }
     }
 }

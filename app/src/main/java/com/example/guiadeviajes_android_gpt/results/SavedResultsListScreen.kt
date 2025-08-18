@@ -12,24 +12,19 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.guiadeviajes_android_gpt.home.presentation.components.HomeTopAppBar
+import com.example.guiadeviajes_android_gpt.navigation.NavRoutes
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-/**
- * SavedResultsListScreen.kt
- *
- * Pantalla que muestra la lista de consultas guardadas por el usuario.
- * Permite navegar al detalle de cada consulta y eliminar resultados.
- *
- * @param navController Controlador de navegación para moverse entre pantallas.
- * @param drawerState   Estado del Drawer para abrir el menú lateral.
- * @param scope         Alcance de corutinas para abrir/cerrar el Drawer.
- * @param viewModel     ViewModel que expone los resultados guardados y eventos de eliminación.
- */
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SavedResultsListScreen(
     navController: NavController,
@@ -37,72 +32,71 @@ fun SavedResultsListScreen(
     scope: CoroutineScope,
     viewModel: SavedResultsViewModel = hiltViewModel()
 ) {
-    // 1) Obtener lista de resultados y flujo de eventos de borrado
-    val items        by viewModel.savedResults.collectAsState()
-    val deleteEvents = viewModel.deleteStatus
-    // Snackbar para mostrar feedback de eliminación
+    // 1) Datos + Snackbar
+    val items by viewModel.savedResults.collectAsState()
     val snackbarHost = remember { SnackbarHostState() }
 
-    // 2) Escuchar eventos de borrado y mostrar mensaje
-    LaunchedEffect(deleteEvents) {
-        deleteEvents.collect { evt ->
-            val message = when (evt) {
+    // 2) Feedback de borrado
+    LaunchedEffect(Unit) {
+        viewModel.deleteStatus.collectLatest { evt ->
+            val msg = when (evt) {
                 is SavedResultsViewModel.DeleteEvent.Success  -> "Consulta eliminada"
                 is SavedResultsViewModel.DeleteEvent.Error    -> "Error al eliminar: ${evt.message}"
                 SavedResultsViewModel.DeleteEvent.NotLoggedIn -> "Debes iniciar sesión"
             }
-            snackbarHost.showSnackbar(message)
+            snackbarHost.showSnackbar(msg)
         }
     }
 
-    // 3) Estructura principal UI
+    // 3) UI
     Scaffold(
+        contentWindowInsets = WindowInsets.systemBars.only(WindowInsetsSides.Top),
         topBar = {
             HomeTopAppBar(
-                // Título
-                userName   = "Mis consultas",
-                // Mostrar contador de consultas
-                userTokens = items.size,
-                onMenuClick = { scope.launch { drawerState.open() } }
+                userName    = "Mis consultas",
+                userTokens  = items.size,
+                onMenuClick = { scope.launch { drawerState.open() } },
+                backgroundColor = Color(0xFF011A30)
             )
         },
         snackbarHost = { SnackbarHost(hostState = snackbarHost) },
         containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
-        // 4) Mostrar mensaje cuando no hay items
-        if (items.isEmpty()) {
-            Box(
-                Modifier
-                    .fillMaxSize()
-                    .padding(padding),
-                contentAlignment = Alignment.Center
-            ) {
-                Text("No tienes consultas guardadas", fontSize = 16.sp)
-            }
-        } else {
-            // 5) Lista de consultas con LazyColumn
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding),
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(
+                    start = padding.calculateStartPadding(LayoutDirection.Ltr),
+                    end   = padding.calculateEndPadding(LayoutDirection.Ltr),
+                    top   = padding.calculateTopPadding(),
+                    bottom = 0.dp
+                )
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            if (items.isEmpty()) {
+                item {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 32.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("No tienes consultas guardadas", fontSize = 16.sp)
+                    }
+                }
+            } else {
                 items(items, key = { it.id }) { item ->
-                    // 6) Tarjeta clicable para navegar a detalle
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable {
-                                navController.navigate("saved_detail/${item.id}")
-                            },
+                            .clickable { navController.navigate(NavRoutes.SavedDetail.build(item.id)) },
                         shape = RoundedCornerShape(12.dp),
                         elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
                         colors = CardDefaults.cardColors(
                             containerColor = MaterialTheme.colorScheme.surfaceVariant
                         )
                     ) {
-                        // 7) Contenido de la tarjeta: ciudad, país e intereses + botón eliminar
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier
@@ -121,7 +115,6 @@ fun SavedResultsListScreen(
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
-                            // 8) Icono para eliminar la consulta
                             IconButton(
                                 onClick = { viewModel.deleteResult(item.id) },
                                 modifier = Modifier.size(36.dp)

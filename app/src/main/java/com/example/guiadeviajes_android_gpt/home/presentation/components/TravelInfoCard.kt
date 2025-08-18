@@ -1,18 +1,19 @@
 package com.example.guiadeviajes_android_gpt.home.presentation.components
-/**
- * TravelInfoCard.kt
- *
- * Composable que muestra información de viaje formateada en Markdown.
- * Convierte el Markdown a HTML, lo renderiza en un TextView dentro de un Card,
- * habilitando enlaces clicables.
- */
+
+import android.annotation.SuppressLint
+import android.graphics.text.LineBreaker
+import android.os.Build
 import android.text.Html
 import android.text.method.LinkMovementMethod
 import android.widget.TextView
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.*
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.dp
@@ -20,45 +21,70 @@ import androidx.compose.ui.viewinterop.AndroidView
 import org.commonmark.parser.Parser
 import org.commonmark.renderer.html.HtmlRenderer
 
+@SuppressLint("ObsoleteSdkInt")
+@RequiresApi(Build.VERSION_CODES.Q)
 @Composable
 fun TravelInfoCard(
-    travelInfo: String
+    travelInfo: String,
+    modifier: Modifier = Modifier
 ) {
-    // 1) Parsear Markdown a AST
-    val parser = Parser.builder().build()
-    val document = parser.parse(travelInfo)
+    // Reusar parser/renderer y el HTML resultante entre recomposiciones
+    val parser = remember { Parser.builder().build() }
+    val renderer = remember { HtmlRenderer.builder().build() }
+    val htmlContent = remember(travelInfo) {
+        val doc = parser.parse(travelInfo)
+        renderer.render(doc)
+    }
 
-    // 2) Renderizar AST a HTML
-    val renderer = HtmlRenderer.builder().build()
-    val htmlContent = renderer.render(document)
+    val containerColor = MaterialTheme.colorScheme.surface
+    val textColorInt = MaterialTheme.colorScheme.onSurface.toArgb()
+    val linkColorInt = MaterialTheme.colorScheme.primary.toArgb()
 
-    // Obtener color de texto desde el tema Material3
-    val textColorInt = MaterialTheme.colorScheme.onBackground.toArgb()
-
-    // Card que envuelve el contenido HTML
     Card(
+        modifier = modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.medium,
-        elevation = CardDefaults.cardElevation(4.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        ),
-        modifier = Modifier.fillMaxWidth()
+        colors = CardDefaults.cardColors(containerColor = containerColor),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
-        // AndroidView para renderizar HTML usando TextView
         AndroidView(
+            modifier = Modifier.padding(16.dp),
             factory = { context ->
                 TextView(context).apply {
-                    // Asignar HTML al TextView
-                    text = Html.fromHtml(htmlContent, Html.FROM_HTML_MODE_LEGACY)
-                    // Color de texto acorde al tema y tamaño
-                    setTextColor(textColorInt)
-                    textSize = 16f
+                    // Render HTML (usamos modo legacy por compatibilidad)
+                    text = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                        Html.fromHtml(htmlContent, Html.FROM_HTML_MODE_LEGACY)
+                    } else {
+                        @Suppress("DEPRECATION")
+                        Html.fromHtml(htmlContent)
+                    }
 
-                    // Habilitar enlaces clicables en el TextView
+                    // Colores y legibilidad
+                    setTextColor(textColorInt)
+                    setLinkTextColor(linkColorInt)
+                    textSize = 16f
+                    setLineSpacing(0f, 1.2f) // 20% de interlineado
+
+                    // Enlaces clicables
                     movementMethod = LinkMovementMethod.getInstance()
+
+                    // Mejoras de lectura
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        breakStrategy = LineBreaker.BREAK_STRATEGY_BALANCED
+                    }
                 }
             },
-            modifier = Modifier.padding(16.dp)
+            update = { tv ->
+                // Si cambia el tema o el contenido, actualizamos
+                tv.setTextColor(textColorInt)
+                tv.setLinkTextColor(linkColorInt)
+                val spanned = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    Html.fromHtml(htmlContent, Html.FROM_HTML_MODE_LEGACY)
+                } else {
+                    @Suppress("DEPRECATION")
+                    Html.fromHtml(htmlContent)
+                }
+                if (tv.text != spanned) tv.text = spanned
+            }
         )
     }
 }
