@@ -19,9 +19,14 @@ Ofrece búsquedas geolocalizadas, filtros inteligentes, caché local y visualiza
 
 ---
 
+<p align="center">
+  <img src="screenshots/ic_petexplorer_portfolio.png" alt="Demo en vídeo" width="960" />
+</p>
+---
+
 ## 🎬 Demo en vídeo
 
-[![Demo de la app](https://img.youtube.com/vi/bxl1MVW5XJs/0.jpg)](https://youtu.be/bxl1MVW5XJs)
+[![Demo de la app](https://img.youtube.com/vi/zOBqi7hyK5I/0.jpg)](https://youtube.com/shorts/zOBqi7hyK5I?feature=share)
 
 ---
 
